@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physical Training and Fitness System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase Realtime Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; }
+    .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.03em; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-marksheet, #printable-marksheet * { visibility: visible; }
+      #printable-marksheet {
+        position: fixed; left: 0; top: 0; width: 100%;
+        background: white !important; color: black !important;
+        padding: 24px; box-shadow: none !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-40 backdrop-blur">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center shadow-lg shadow-sky-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 id="header-site-title" class="font-display text-lg sm:text-xl font-bold text-white uppercase tracking-wide leading-tight">
+            Physical Training and Fitness System
+          </h1>
+          <p class="text-[11px] text-sky-400 font-medium tracking-wider uppercase">SLAF Athletic &amp; Conditioning Portal</p>
+        </div>
+      </div>
+
+      <!-- Compact Creator Button Only -->
+      <button onclick="openCreatorModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Creator</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB NAVIGATION BAR (Visible when inside a topic) -->
+  <div id="breadcrumb-bar" class="hidden bg-slate-900/60 border-b border-slate-800/80">
+    <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs">
+      <div id="breadcrumb-trail" class="flex items-center gap-2 text-slate-400 flex-wrap"></div>
+      <button onclick="goHome()" class="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
+        <span>← Home</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto px-4 py-8"></main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+    <span id="footer-title">Physical Training and Fitness System</span> • Structured Conditioning &amp; PFT Evaluation
+  </footer>
+
+  <!-- COMPACT CREATOR MODAL -->
+  <div id="creator-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeCreatorModal()">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl relative">
+      <button onclick="closeCreatorModal()" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg p-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3.5 mb-4">
+        <img id="modal-creator-photo" src="" alt="Creator" class="w-16 h-16 rounded-xl object-cover border-2 border-sky-500 bg-slate-800" />
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-sky-400 font-bold">Creator</span>
+          <h3 id="modal-creator-name" class="text-base font-bold text-white mt-0.5">40218 Sgt Suranga</h3>
+          <div class="flex items-center gap-2 mt-1">
+            <img id="modal-profile-photo" src="" alt="Profile" class="w-6 h-6 rounded-full object-cover border border-amber-400 bg-slate-800" />
+            <span class="text-[11px] text-slate-400">Qualified PTI &amp; Sports Specialist</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5">
+        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Courses &amp; Qualifications</p>
+        <ul id="modal-qualifications-list" class="space-y-1.5 text-xs text-slate-200"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSULTATION / ASK PTI MODAL -->
+  <div id="consult-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeConsultModal()">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold text-white">Request Fitness Advice / උපදෙස් ලබාගන්න</h3>
+        <button onclick="closeConsultModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+      <p id="consult-pti-target" class="text-xs text-sky-400 mb-3 font-medium"></p>
+      <div class="space-y-3">
+        <input id="consult-sender" type="text" placeholder="Your Service No / Name (ඔබේ නම හෝ අංකය)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-500 outline-none" />
+        <textarea id="consult-question" rows="3" placeholder="Write your training, fat burn, or PFT question here..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-500 outline-none"></textarea>
+        <button onclick="sendWhatsAppConsultation()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+          <span>Send via WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // DEFAULT DATA & FIREBASE-READY STORAGE ADAPTER
+    // =========================================================================
+    const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%2338bdf8'/%3E%3Cpath d='M20 88c0-17 13-30 30-30s30 13 30 30' fill='%2338bdf8'/%3E%3C/svg%3E";
+
+    const DEFAULT_DATA = {
+      siteTitle: "Physical Training and Fitness System",
+      adminPassword: "40218",
+      firebaseConfig: null, // Paste Firebase JSON config in Admin Panel for live multi-device sync
+      creator: {
+        name: "40218 Sgt Suranga",
+        creatorPhoto: DEFAULT_AVATAR,
+        profilePhoto: DEFAULT_AVATAR,
+        qualifications: [
+          "Dip Sports NVQ IV",
+          "Physical Training Instructor",
+          "Trade Instructor",
+          "Aerobic Training Instructor"
+        ]
+      },
+      ptis: [
+        {
+          id: "pti-1",
+          name: "40218 Sgt Suranga",
+          category: "Diploma",
+          qualification: "Dip Sports NVQ IV, PTI, Trade & Aerobic Instructor",
+          specialty: "Athletic Conditioning, Fat Burn & PFT Preparation",
+          whatsapp: "94784693750"
+        },
+        {
+          id: "pti-2",
+          name: "Cpl Perera K.M.",
+          category: "MIC",
+          qualification: "MIC Qualified Physical Training Instructor",
+          specialty: "Endurance Running & Combat Fitness",
+          whatsapp: "94784693750"
+        }
+      ],
+      trainingGuides: [
+        {
+          id: "guide-fatburn",
+          category: "Fat Burn",
+          title: "Metabolic Conditioning & Fat Burn Protocol",
+          summary: "Scientific approach to reducing body fat percentage while preserving lean muscle mass.",
+          content: "1. Maintain Target Heart Rate between 65% - 75% of Max HR during steady-state sessions (35-45 mins).\n2. Incorporate HIIT (High-Intensity Interval Training) twice a week: 30 sec sprint / 45 sec active walk x 10 rounds.\n3. Maintain a controlled calorie deficit of 300-500 kcal/day with high protein intake (1.6g - 2.0g per kg bodyweight).\n4. Prioritize 7-8 hours of recovery sleep to regulate cortisol and optimize fat oxidation."
+        },
+        {
+          id: "guide-cardio",
+          category: "Cardio",
+          title: "Aerobic Capacity & 2.4km Run Speed Work",
+          summary: "Structured cardiovascular drills to improve VO2 max and PFT run timings.",
+          content: "1. Tempo Runs: Run 20 minutes at a comfortably hard pace (80-85% effort) once per week.\n2. 400m Track Repeats: Complete 6 x 400m at faster than target 2.4km race pace with 90 seconds rest.\n3. Breathing Rhythm: Practice 2:2 rhythmic breathing (2 steps inhale, 2 steps exhale) to delay diaphragm fatigue.\n4. Dynamic Warm-up: Always perform 10 minutes of leg swings, high knees, and butt kicks before speed work."
+        },
+        {
+          id: "guide-endurance",
+          category: "Endurance",
+          title: "Muscular & Stamina Endurance Building",
+          summary: "Progressive overload circuits for Push-ups, Sit-ups, Pull-ups, and long-distance stamina.",
+          content: "1. Grease-the-Groove Method: Perform 50% of your max Push-ups/Pull-ups 4 times throughout the day with full recovery.\n2. Pyramid Sets: 1-2-3-4-5-4-3-2-1 Pull-ups with 30 seconds rest between rungs.\n3. Core Stability: Hold front plank for 60s, side planks 45s each side, and 25 hollow-body rocks x 3 rounds.\n4. Long Slow Distance (LSD): 45-60 minute steady aerobic run at conversational pace every weekend."
+        }
+      ],
+      pftPdf: {
+        fileName: "",
+        dataUrl: ""
+      },
+      pftEvents: [
+        { id: "ev-run", name: "2.4 km Run (Seconds)", type: "lower_better", targetFull: 540, minPass: 720, maxMarks: 100 },
+        { id: "ev-push", name: "Push-ups (2 Mins)", type: "higher_better", targetFull: 55, minPass: 30, maxMarks: 100 },
+        { id: "ev-sit", name: "Sit-ups (2 Mins)", type: "higher_better", targetFull: 60, minPass: 35, maxMarks: 100 },
+        { id: "ev-pull", name: "Pull-ups (Max Reps)", type: "higher_better", targetFull: 12, minPass: 5, maxMarks: 100 }
+      ]
+    };
+
+    const STORAGE_KEY = "slaf_pt_fitness_system_v2";
+    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(DEFAULT_DATA));
+    let dbRef = null;
+
+    function initFirebaseIfConfigured() {
+      if (appData.firebaseConfig && typeof firebase !== "undefined") {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(appData.firebaseConfig);
+          }
+          dbRef = firebase.database().ref("pt_fitness_system_data");
+          dbRef.on("value", (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+              appData = { ...DEFAULT_DATA, ...val };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+              refreshUI();
+            }
+          });
+        } catch (err) {
+          console.error("Firebase init error:", err);
+        }
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      if (dbRef) {
+        dbRef.set(appData).catch(e => console.error("Firebase sync failed:", e));
+      }
+      refreshUI();
+    }
+
+    // =========================================================================
+    // NAVIGATION & STATE
+    // =========================================================================
+    let currentView = "home"; // home | subtopics | pti_list | guide_detail | calculators | pft_system | admin
+    let selectedMainTopic = null;
+    let selectedSubParam = null;
+    let isAdminAuthenticated = false;
+    let activeConsultPti = null;
+
+    function checkAdminUrl() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("admin") || window.location.hash === "#admin") {
+        currentView = "admin";
+      }
+    }
+
+    function goHome() {
+      if (window.location.search.includes("admin")) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      currentView = "home";
+      selectedMainTopic = null;
+      selectedSubParam = null;
+      refreshUI();
+    }
+
+    function openMainTopic(topicId) {
+      selectedMainTopic = topicId;
+      currentView = "subtopics";
+      refreshUI();
+    }
+
+    function openSubTopic(view, param = null) {
+      currentView = view;
+      selectedSubParam = param;
+      refreshUI();
+    }
+
+    function refreshUI() {
+      document.getElementById("header-site-title").textContent = appData.siteTitle;
+      document.getElementById("footer-title").textContent = appData.siteTitle;
+      document.title = appData.siteTitle;
+
+      const bcBar = document.getElementById("breadcrumb-bar");
+      const bcTrail = document.getElementById("breadcrumb-trail");
+      if (currentView === "home") {
+        bcBar.classList.add("hidden");
+      } else {
+        bcBar.classList.remove("hidden");
+        bcTrail.innerHTML = buildBreadcrumb();
+      }
+
+      const container = document.getElementById("app-container");
+      if (currentView === "home") container.innerHTML = renderHome();
+      else if (currentView === "subtopics") container.innerHTML = renderSubtopics();
+      else if (currentView === "pti_list") container.innerHTML = renderPtiList();
+      else if (currentView === "guide_detail") container.innerHTML = renderGuideDetail();
+      else if (currentView === "calculators") container.innerHTML = renderCalculators();
+      else if (currentView === "pft_system") container.innerHTML = renderPftSystem();
+      else if (currentView === "admin") container.innerHTML = renderAdminPanel();
+    }
+
+    function buildBreadcrumb() {
+      let html = `<button onclick="goHome()" class="hover:text-white">Home</button>`;
+      if (selectedMainTopic && currentView !== "admin") {
+        const names = {
+          pti: "PTI Directory & Registration",
+          guides: "Training Modules",
+          calculators: "Fitness Calculators",
+          pft: "Physical Fitness Test (PFT)"
+        };
+        html += ` <span>/</span> <button onclick="openMainTopic('${selectedMainTopic}')" class="hover:text-white">${names[selectedMainTopic]}</button>`;
+      }
+      if (currentView === "admin") {
+        html += ` <span>/</span> <span class="text-amber-400 font-semibold">Admin Panel</span>`;
+      } else if (currentView !== "subtopics" && selectedSubParam) {
+        html += ` <span>/</span> <span class="text-sky-400 font-semibold">${selectedSubParam}</span>`;
+      }
+      return html;
+    }
+
+    // =========================================================================
+    // 1. CLEAN HOME SCREEN (Main Topic Buttons Only)
+    // =========================================================================
+    function renderHome() {
+      const topics = [
+        {
+          id: "pti",
+          title: "PTI Directory & Advice",
+          si: "පුහුණු උපදේශකයින් (Diploma & MIC PTIs)",
+          desc: "View Diploma & MIC qualified PTIs, register new instructors, and request personal fitness guidance.",
+          accent: "from-sky-500 to-blue-600",
+          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`
+        },
+        {
+          id: "guides",
+          title: "Training Modules",
+          si: "පුහුණු ක්‍රමවේද (Fat Burn, Cardio & Endurance)",
+          desc: "Structured protocols for fat loss, cardiovascular conditioning, and muscular endurance.",
+          accent: "from-emerald-500 to-teal-600",
+          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>`
+        },
+        {
+          id: "calculators",
+          title: "Fitness Calculators",
+          si: "ශාරීරික මිනුම් ගණනය කිරීම් (BMI, Heart Rate, Body Fat)",
+          desc: "Calculate BMI, Navy Body Fat %, Target Heart Rate zones, Daily Hydration, and Calorie needs.",
+          accent: "from-amber-500 to-orange-600",
+          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>`
+        },
+        {
+          id: "pft",
+          title: "Physical Fitness Test (PFT)",
+          si: "ශාරීරික යෝග්‍යතා පරීක්ෂණය සහ ලකුණු පත්‍රිකාව",
+          desc: "Access official PFT PDF standards, auto-calculate event scores, and generate printable marksheets.",
+          accent: "from-indigo-500 to-purple-600",
+          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`
+        }
+      ];
+
+      return `
+        <div class="max-w-3xl mx-auto">
+          <div class="text-center mb-8">
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white uppercase tracking-wide">Select a Training Module</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">Tap any main topic below to explore sub-topics and tools</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ${topics.map(t => `
+              <button onclick="openMainTopic('${t.id}')" class="group text-left bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-sky-500/60 rounded-2xl p-6 transition-all shadow-lg hover:shadow-sky-500/10 flex flex-col justify-between">
+                <div>
+                  <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${t.accent} flex items-center justify-center mb-4 shadow-md group-hover:scale-105 transition-transform">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${t.icon}</svg>
+                  </div>
+                  <h3 class="font-display text-xl font-bold text-white uppercase tracking-wide group-hover:text-sky-400 transition-colors">${t.title}</h3>
+                  <p class="text-xs text-sky-400/90 font-medium mt-0.5">${t.si}</p>
+                  <p class="text-xs text-slate-400 mt-2.5 leading-relaxed">${t.desc}</p>
+                </div>
+                <div class="mt-5 flex items-center text-xs font-semibold text-slate-300 group-hover:text-white">
+                  <span>Open Sub-Topics</span>
+                  <span class="ml-1.5 group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 2. SUB-TOPICS DRILL-DOWN VIEW
+    // =========================================================================
+    function renderSubtopics() {
+      if (selectedMainTopic === "pti") {
+        return `
+          <div class="max-w-2xl mx-auto space-y-3">
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">PTI Directory &amp; Consultation</h2>
+            <button onclick="openSubTopic('pti_list', 'Diploma')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500 rounded-xl p-5 flex items-center justify-between transition">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Category 01</span>
+                <h3 class="text-base font-bold text-white mt-0.5">Diploma Qualified PTIs (ඩිප්ලෝමාධාරී PTI උපදේශකයින්)</h3>
+                <p class="text-xs text-slate-400 mt-1">View registered Diploma in Sports Science PTIs &amp; request advice</p>
+              </div>
+              <span class="text-sky-400 font-bold text-lg">→</span>
+            </button>
+            <button onclick="openSubTopic('pti_list', 'MIC')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500 rounded-xl p-5 flex items-center justify-between transition">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Category 02</span>
+                <h3 class="text-base font-bold text-white mt-0.5">MIC Qualified PTIs (MIC පාඨමාලාධාරී PTI උපදේශකයින්)</h3>
+                <p class="text-xs text-slate-400 mt-1">View registered MIC Physical Training Instructors &amp; request advice</p>
+              </div>
+              <span class="text-amber-400 font-bold text-lg">→</span>
+            </button>
+            <button onclick="openSubTopic('pti_list', 'Register')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 rounded-xl p-5 flex items-center justify-between transition">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Instructor Onboarding</span>
+                <h3 class="text-base font-bold text-white mt-0.5">Register as a PTI (නව PTI ලියාපදිංචිය - Diploma / MIC)</h3>
+                <p class="text-xs text-slate-400 mt-1">Register separately under Diploma or MIC category</p>
+              </div>
+              <span class="text-emerald-400 font-bold text-lg">→</span>
+            </button>
+          </div>
+        `;
+      }
+
+      if (selectedMainTopic === "guides") {
+        return `
+          <div class="max-w-2xl mx-auto space-y-3">
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Training Modules &amp; Guides</h2>
+            ${appData.trainingGuides.map(g => `
+              <button onclick="openSubTopic('guide_detail', '${g.id}')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 rounded-xl p-5 flex items-center justify-between transition">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">${g.category}</span>
+                  <h3 class="text-base font-bold text-white mt-0.5">${g.title}</h3>
+                  <p class="text-xs text-slate-400 mt-1">${g.summary}</p>
+                </div>
+                <span class="text-emerald-400 font-bold text-lg">→</span>
+              </button>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      if (selectedMainTopic === "calculators") {
+        const calcs = [
+          { id: "bmi", title: "BMI Calculator (ශරීර ස්කන්ධ දර්ශකය)", desc: "Calculate Body Mass Index and weight category" },
+          { id: "bodyfat", title: "Navy Body Fat % Calculator", desc: "Estimate body fat percentage using circumference measurements" },
+          { id: "hr", title: "Target Heart Rate (THR) Zones", desc: "Find Fat Burn, Cardio, and Peak performance pulse zones" },
+          { id: "hydration", title: "Daily Hydration & Calorie Needs", desc: "Calculate daily water intake (Liters) and TDEE calories" }
+        ];
+        return `
+          <div class="max-w-2xl mx-auto space-y-3">
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Fitness &amp; Body Calculators</h2>
+            ${calcs.map(c => `
+              <button onclick="openSubTopic('calculators', '${c.id}')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500 rounded-xl p-5 flex items-center justify-between transition">
+                <div>
+                  <h3 class="text-base font-bold text-white">${c.title}</h3>
+                  <p class="text-xs text-slate-400 mt-1">${c.desc}</p>
+                </div>
+                <span class="text-amber-400 font-bold text-lg">→</span>
+              </button>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      if (selectedMainTopic === "pft") {
+        return `
+          <div class="max-w-2xl mx-auto space-y-3">
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Physical Fitness Test (PFT) System</h2>
+            <button onclick="openSubTopic('pft_system', 'scorer')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 rounded-xl p-5 flex items-center justify-between transition">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400">Auto Evaluation</span>
+                <h3 class="text-base font-bold text-white mt-0.5">PFT Auto-Scorer &amp; Marksheet Generator</h3>
+                <p class="text-xs text-slate-400 mt-1">Enter candidate performance to compute marks &amp; print official marksheet</p>
+              </div>
+              <span class="text-indigo-400 font-bold text-lg">→</span>
+            </button>
+            <button onclick="openSubTopic('pft_system', 'pdf')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500 rounded-xl p-5 flex items-center justify-between transition">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Official Reference</span>
+                <h3 class="text-base font-bold text-white mt-0.5">View / Download PFT Standards PDF</h3>
+                <p class="text-xs text-slate-400 mt-1">Open uploaded Physical Fitness Test circular and scoring table PDF</p>
+              </div>
+              <span class="text-sky-400 font-bold text-lg">→</span>
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // 3. PTI DIRECTORY & SEPARATE REGISTRATION
+    // =========================================================================
+    function renderPtiList() {
+      if (selectedSubParam === "Register") {
+        return `
+          <div class="max-w-lg mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">PTI Registration Form</h2>
+            <p class="text-xs text-slate-400 mb-5">Register separately under Diploma or MIC PTI category</p>
+            <div class="space-y-3.5">
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Category (තෝරන්න)</label>
+                <select id="reg-pti-cat" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                  <option value="Diploma">Diploma Qualified PTI</option>
+                  <option value="MIC">MIC Qualified PTI</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Service No, Rank &amp; Name</label>
+                <input id="reg-pti-name" type="text" placeholder="e.g., 40218 Sgt Suranga" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Qualifications / Courses</label>
+                <input id="reg-pti-qual" type="text" placeholder="e.g., Dip Sports NVQ IV, PTI" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Specialization</label>
+                <input id="reg-pti-spec" type="text" placeholder="e.g., Aerobic Conditioning, Fat Burn, PFT" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">WhatsApp Number (with 94)</label>
+                <input id="reg-pti-wa" type="text" placeholder="947XXXXXXXX" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+              <button onclick="submitNewPti()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                Complete Registration
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      const filtered = appData.ptis.filter(p => p.category === selectedSubParam);
+      return `
+        <div class="max-w-3xl mx-auto">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="font-display text-2xl font-bold text-white uppercase">${selectedSubParam} Qualified PTIs</h2>
+            <button onclick="openSubTopic('pti_list', 'Register')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl">+ Register PTI</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ${filtered.length ? filtered.map(p => `
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${p.category === 'Diploma' ? 'bg-sky-500/20 text-sky-400' : 'bg-amber-500/20 text-amber-400'}">${p.category} PTI</span>
+                  <h3 class="text-base font-bold text-white mt-2.5">${p.name}</h3>
+                  <p class="text-xs text-slate-300 mt-1">${p.qualification}</p>
+                  <p class="text-xs text-slate-400 mt-2"><strong class="text-slate-300">Focus:</strong> ${p.specialty}</p>
+                </div>
+                <button onclick="openConsultModal('${p.id}')" class="mt-4 w-full bg-slate-800 hover:bg-sky-600 text-white text-xs font-semibold py-2.5 rounded-xl transition">
+                  Ask Advice / උපදෙස් ලබාගන්න
+                </button>
+              </div>
+            `).join("") : `<p class="text-xs text-slate-400">No PTIs registered in this category yet.</p>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function submitNewPti() {
+      const category = document.getElementById("reg-pti-cat").value;
+      const name = document.getElementById("reg-pti-name").value.trim();
+      const qualification = document.getElementById("reg-pti-qual").value.trim();
+      const specialty = document.getElementById("reg-pti-spec").value.trim();
+      const whatsapp = document.getElementById("reg-pti-wa").value.trim() || "94784693750";
+      if (!name || !qualification) return alert("Please enter Name and Qualifications.");
+
+      appData.ptis.push({
+        id: "pti-" + Date.now(),
+        name, category, qualification, specialty: specialty || "General Physical Conditioning", whatsapp
+      });
+      saveData();
+      alert("PTI Registered Successfully!");
+      openSubTopic("pti_list", category);
+    }
+
+    // =========================================================================
+    // 4. TRAINING GUIDE DETAIL
+    // =========================================================================
+    function renderGuideDetail() {
+      const guide = appData.trainingGuides.find(g => g.id === selectedSubParam) || appData.trainingGuides[0];
+      if (!guide) return `<p class="text-xs text-slate-400">Guide not found.</p>`;
+      return `
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${guide.category}</span>
+          <h2 class="font-display text-2xl font-bold text-white uppercase mt-1">${guide.title}</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-5">${guide.summary}</p>
+          <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 whitespace-pre-line leading-relaxed">
+            ${guide.content}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 5. FITNESS CALCULATORS
+    // =========================================================================
+    function renderCalculators() {
+      if (selectedSubParam === "bmi") {
+        return `
+          <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-4">BMI Calculator</h2>
+            <div class="space-y-3">
+              <input id="bmi-weight" type="number" placeholder="Weight in kg (e.g., 70)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bmi-height" type="number" placeholder="Height in cm (e.g., 175)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <button onclick="calcBMI()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate BMI</button>
+            </div>
+            <div id="bmi-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-center"></div>
+          </div>
+        `;
+      }
+      if (selectedSubParam === "bodyfat") {
+        return `
+          <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Navy Body Fat % Calculator</h2>
+            <div class="space-y-3">
+              <input id="bf-height" type="number" placeholder="Height in cm (e.g., 175)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bf-neck" type="number" placeholder="Neck circumference in cm (e.g., 38)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bf-waist" type="number" placeholder="Waist circumference in cm (e.g., 82)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <button onclick="calcBodyFat()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Body Fat %</button>
+            </div>
+            <div id="bf-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-center"></div>
+          </div>
+        `;
+      }
+      if (selectedSubParam === "hr") {
+        return `
+          <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Target Heart Rate Zones</h2>
+            <div class="space-y-3">
+              <input id="hr-age" type="number" placeholder="Your Age (e.g., 28)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <button onclick="calcHR()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Heart Zones</button>
+            </div>
+            <div id="hr-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs space-y-2"></div>
+          </div>
+        `;
+      }
+      return `
+        <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Daily Hydration &amp; Calorie Calculator</h2>
+          <div class="space-y-3">
+            <input id="hyd-weight" type="number" placeholder="Body Weight in kg (e.g., 72)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            <input id="hyd-mins" type="number" placeholder="Daily Training Minutes (e.g., 60)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            <button onclick="calcHydration()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Intake</button>
+          </div>
+          <div id="hyd-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs space-y-2"></div>
+        </div>
+      `;
+    }
+
+    function calcBMI() {
+      const w = parseFloat(document.getElementById("bmi-weight").value);
+      const h = parseFloat(document.getElementById("bmi-height").value) / 100;
+      if (!w || !h) return;
+      const bmi = (w / (h * h)).toFixed(1);
+      let status = bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal / Fit" : bmi < 30 ? "Overweight" : "Obese";
+      const res = document.getElementById("bmi-result");
+      res.classList.remove("hidden");
+      res.innerHTML = `<p class="text-2xl font-bold text-amber-400">${bmi}</p><p class="text-xs text-slate-300 mt-1">Status: <strong>${status}</strong></p>`;
+    }
+
+    function calcBodyFat() {
+      const h = parseFloat(document.getElementById("bf-height").value);
+      const n = parseFloat(document.getElementById("bf-neck").value);
+      const w = parseFloat(document.getElementById("bf-waist").value);
+      if (!h || !n || !w || w <= n) return;
+      const bf = (495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450).toFixed(1);
+      const res = document.getElementById("bf-result");
+      res.classList.remove("hidden");
+      res.innerHTML = `<p class="text-2xl font-bold text-amber-400">${bf}%</p><p class="text-xs text-slate-300 mt-1">Estimated Body Fat Percentage</p>`;
+    }
+
+    function calcHR() {
+      const age = parseInt(document.getElementById("hr-age").value);
+      if (!age) return;
+      const maxHr = Math.round(208 - 0.7 * age);
+      const res = document.getElementById("hr-result");
+      res.classList.remove("hidden");
+      res.innerHTML = `
+        <p class="text-sm font-bold text-white">Max Heart Rate: <span class="text-amber-400">${maxHr} bpm</span></p>
+        <p class="text-emerald-400">• Fat Burn Zone (65-75%): <strong>${Math.round(maxHr*0.65)} - ${Math.round(maxHr*0.75)} bpm</strong></p>
+        <p class="text-sky-400">• Cardio Endurance Zone (75-85%): <strong>${Math.round(maxHr*0.75)} - ${Math.round(maxHr*0.85)} bpm</strong></p>
+        <p class="text-rose-400">• Peak Anaerobic Zone (85-95%): <strong>${Math.round(maxHr*0.85)} - ${Math.round(maxHr*0.95)} bpm</strong></p>
+      `;
+    }
+
+    function calcHydration() {
+      const w = parseFloat(document.getElementById("hyd-weight").value);
+      const m = parseFloat(document.getElementById("hyd-mins").value) || 0;
+      if (!w) return;
+      const liters = (w * 0.033 + (m / 30) * 0.35).toFixed(2);
+      const cals = Math.round(w * 32 + m * 7);
+      const res = document.getElementById("hyd-result");
+      res.classList.remove("hidden");
+      res.innerHTML = `
+        <p class="text-sky-400 font-bold text-sm">Daily Water Target: ${liters} Liters</p>
+        <p class="text-amber-400 font-bold text-sm">Estimated Daily Maintenance Calories: ${cals} kcal</p>
+      `;
+    }
+
+    // =========================================================================
+    // 6. PFT PDF VIEWER & AUTO MARKSHEET SYSTEM
+    // =========================================================================
+    function renderPftSystem() {
+      if (selectedSubParam === "pdf") {
+        return `
+          <div class="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-2">Official PFT Standards &amp; Circular PDF</h2>
+            ${appData.pftPdf && appData.pftPdf.dataUrl ? `
+              <p class="text-xs text-emerald-400 mb-3">Document: ${appData.pftPdf.fileName}</p>
+              <iframe src="${appData.pftPdf.dataUrl}" class="w-full h-[500px] rounded-xl border border-slate-700 bg-white"></iframe>
+              <a href="${appData.pftPdf.dataUrl}" download="${appData.pftPdf.fileName}" class="mt-4 inline-block bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl">Download PDF</a>
+            ` : `
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 text-center">
+                <p class="text-xs text-slate-400">No PFT PDF has been uploaded yet. The administrator can upload the official PFT PDF via the Admin Panel.</p>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="max-w-3xl mx-auto space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">PFT Auto-Scorer &amp; Marksheet Generator</h2>
+            <p class="text-xs text-slate-400 mb-4">Enter candidate details and raw test scores to generate an official marksheet</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <input id="pft-svc" type="text" placeholder="Service No (e.g., 40218)" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="pft-rank-name" type="text" placeholder="Rank &amp; Name" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="pft-unit" type="text" placeholder="Base / Unit / Squadron" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+              ${appData.pftEvents.map(ev => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">${ev.name}</label>
+                  <p class="text-[10px] text-slate-400 mb-2">Full (${ev.maxMarks} pts): ${ev.targetFull} | Min Pass: ${ev.minPass}</p>
+                  <input id="input-${ev.id}" type="number" step="any" placeholder="Enter performance value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                </div>
+              `).join("")}
+            </div>
+
+            <button onclick="generatePftMarksheet()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-xs uppercase tracking-wider transition">
+              Calculate Marks &amp; Generate Marksheet
+            </button>
+          </div>
+
+          <div id="marksheet-output" class="hidden"></div>
+        </div>
+      `;
+    }
+
+    function generatePftMarksheet() {
+      const svc = document.getElementById("pft-svc").value.trim() || "N/A";
+      const rankName = document.getElementById("pft-rank-name").value.trim() || "Candidate";
+      const unit = document.getElementById("pft-unit").value.trim() || "SLAF";
+
+      let totalObtained = 0;
+      let totalPossible = 0;
+      let allPassed = true;
+      const rows = [];
+
+      appData.pftEvents.forEach(ev => {
+        const val = parseFloat(document.getElementById(`input-${ev.id}`).value);
+        let score = 0;
+        let passed = false;
+
+        if (!isNaN(val)) {
+          if (ev.type === "higher_better") {
+            if (val >= ev.targetFull) score = ev.maxMarks;
+            else if (val >= ev.minPass) {
+              score = Math.round(50 + ((val - ev.minPass) / (ev.targetFull - ev.minPass)) * (ev.maxMarks - 50));
+            } else {
+              score = Math.max(0, Math.round((val / ev.minPass) * 49));
+            }
+            passed = val >= ev.minPass;
+          } else {
+            // lower_better (e.g. run time in seconds)
+            if (val <= ev.targetFull) score = ev.maxMarks;
+            else if (val <= ev.minPass) {
+              score = Math.round(50 + ((ev.minPass - val) / (ev.minPass - ev.targetFull)) * (ev.maxMarks - 50));
+            } else {
+              score = Math.max(0, Math.round((ev.minPass / val) * 40));
+            }
+            passed = val <= ev.minPass;
+          }
+        }
+        if (!passed) allPassed = false;
+        totalObtained += score;
+        totalPossible += ev.maxMarks;
+        rows.push({ name: ev.name, raw: isNaN(val) ? "-" : val, score, max: ev.maxMarks, passed });
+      });
+
+      const pct = totalPossible ? ((totalObtained / totalPossible) * 100).toFixed(1) : 0;
+      const grade = !allPassed ? "FAIL" : pct >= 85 ? "DISTINCTION (A)" : pct >= 70 ? "CREDIT (B)" : "PASS (C)";
+      const today = new Date().toLocaleDateString();
+
+      const out = document.getElementById("marksheet-output");
+      out.classList.remove("hidden");
+      out.innerHTML = `
+        <div id="printable-marksheet" class="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-300">
+          <div class="border-b-2 border-slate-900 pb-4 mb-4 flex items-center justify-between">
+            <div>
+              <h3 class="font-display text-xl font-bold uppercase tracking-wide text-slate-900">${appData.siteTitle}</h3>
+              <p class="text-xs font-semibold text-slate-600 uppercase">Official Physical Fitness Test (PFT) Marksheet</p>
+            </div>
+            <div class="text-right text-xs text-slate-600">
+              <p><strong>Date:</strong> ${today}</p>
+              <p><strong>Status:</strong> <span class="${allPassed ? 'text-emerald-700' : 'text-red-700'} font-bold">${grade}</span></p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 bg-slate-100 p-3 rounded-lg text-xs mb-5">
+            <div><span class="text-slate-500">Service No:</span> <strong>${svc}</strong></div>
+            <div><span class="text-slate-500">Rank &amp; Name:</span> <strong>${rankName}</strong></div>
+            <div><span class="text-slate-500">Unit / Base:</span> <strong>${unit}</strong></div>
+          </div>
+
+          <table class="w-full text-xs border-collapse mb-5">
+            <thead>
+              <tr class="bg-slate-900 text-white">
+                <th class="p-2.5 text-left">Test Event</th>
+                <th class="p-2.5 text-center">Performance</th>
+                <th class="p-2.5 text-center">Marks</th>
+                <th class="p-2.5 text-center">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `
+                <tr class="border-b border-slate-200">
+                  <td class="p-2.5 font-medium">${r.name}</td>
+                  <td class="p-2.5 text-center">${r.raw}</td>
+                  <td class="p-2.5 text-center font-bold">${r.score} / ${r.max}</td>
+                  <td class="p-2.5 text-center font-bold ${r.passed ? 'text-emerald-700' : 'text-red-600'}">${r.passed ? 'PASS' : 'FAIL'}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div class="flex items-center justify-between bg-slate-100 p-4 rounded-xl text-sm">
+            <div>
+              <p class="text-xs text-slate-500">Total Score</p>
+              <p class="font-bold text-lg text-slate-900">${totalObtained} / ${totalPossible} (${pct}%)</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-slate-500">Final Grade</p>
+              <p class="font-bold text-lg ${allPassed ? 'text-emerald-700' : 'text-red-700'}">${grade}</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-300 flex items-center justify-between text-[11px] text-slate-500">
+            <span>Verified by: ${appData.creator.name}</span>
+            <button onclick="window.print()" class="no-print bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-xs">
+              Print / Save PDF Marksheet
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 7. SEPARATE URL ADMIN PANEL (?admin)
+    // =========================================================================
+    let activeAdminTab = "general";
+
+    function renderAdminPanel() {
+      if (!isAdminAuthenticated) {
+        return `
+          <div class="max-w-sm mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 mt-8 shadow-2xl">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Restricted Access</span>
+            <h2 class="font-display text-2xl font-bold text-white uppercase mt-1 mb-4">Admin Panel Login</h2>
+            <input id="admin-pass-input" type="password" placeholder="Enter Admin Password" onkeydown="if(event.key==='Enter') verifyAdminLogin()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white mb-3" />
+            <button onclick="verifyAdminLogin()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+              Unlock Admin Panel
+            </button>
+          </div>
+        `;
+      }
+
+      const tabs = [
+        { id: "general", label: "General & Photos" },
+        { id: "ptis", label: "PTIs (Diploma/MIC)" },
+        { id: "guides", label: "Training Guides" },
+        { id: "pft", label: "PFT Events & PDF" },
+        { id: "firebase", label: "Firebase & Security" }
+      ];
+
+      return `
+        <div class="max-w-4xl mx-auto">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Administrator Mode</span>
+              <h2 class="font-display text-2xl font-bold text-white uppercase">System Control Panel</h2>
+            </div>
+            <button onclick="isAdminAuthenticated=false; goHome();" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3.5 py-2 rounded-xl">Exit Admin</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
+            ${tabs.map(t => `
+              <button onclick="activeAdminTab='${t.id}'; refreshUI();" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition ${activeAdminTab === t.id ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'}">
+                ${t.label}
+              </button>
+            `).join("")}
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            ${renderAdminTabContent()}
+          </div>
+        </div>
+      `;
+    }
+
+    function verifyAdminLogin() {
+      const entered = document.getElementById("admin-pass-input").value;
+      if (entered === appData.adminPassword) {
+        isAdminAuthenticated = true;
+        refreshUI();
+      } else {
+        alert("Incorrect Admin Password!");
+      }
+    }
+
+    function renderAdminTabContent() {
+      if (activeAdminTab === "general") {
+        return `
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">System Title</label>
+              <input id="adm-site-title" type="text" value="${appData.siteTitle}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Creator Name &amp; Service No</label>
+              <input id="adm-creator-name" type="text" value="${appData.creator.name}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Qualifications (One per line)</label>
+              <textarea id="adm-creator-quals" rows="4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">${appData.creator.qualifications.join("\n")}</textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
+                <label class="block text-xs text-slate-300 mb-2">Upload Creator Photo</label>
+                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'creatorPhoto')" class="text-xs text-slate-400" />
+              </div>
+              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
+                <label class="block text-xs text-slate-300 mb-2">Upload Profile Photo</label>
+                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'profilePhoto')" class="text-xs text-slate-400" />
+              </div>
+            </div>
+            <button onclick="saveGeneralSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl">Save General Settings</button>
+          </div>
+        `;
+      }
+
+      if (activeAdminTab === "ptis") {
+        return `
+          <div class="space-y-4">
+            <h3 class="text-sm font-bold text-white">Manage Registered PTIs</h3>
+            ${appData.ptis.map((p, idx) => `
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                <div>
+                  <span class="text-[10px] font-bold uppercase text-sky-400">${p.category}</span>
+                  <p class="text-xs font-bold text-white">${p.name}</p>
+                  <p class="text-[11px] text-slate-400">${p.qualification}</p>
+                </div>
+                <button onclick="appData.ptis.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs px-3 py-1.5 rounded-lg">Delete</button>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      if (activeAdminTab === "guides") {
+        return `
+          <div class="space-y-5">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <h3 class="text-xs font-bold uppercase text-emerald-400">Add New Training Guide</h3>
+              <input id="adm-g-cat" type="text" placeholder="Category (e.g., Fat Burn, Cardio, Endurance, Agility)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              <input id="adm-g-title" type="text" placeholder="Guide Title" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              <input id="adm-g-sum" type="text" placeholder="Short Summary" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              <textarea id="adm-g-body" rows="3" placeholder="Detailed workout steps..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></textarea>
+              <button onclick="addNewGuide()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ Add Guide</button>
+            </div>
+            <div class="space-y-2">
+              ${appData.trainingGuides.map((g, idx) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <span class="text-[10px] text-emerald-400 font-bold uppercase">${g.category}</span>
+                    <p class="text-xs font-bold text-white">${g.title}</p>
+                  </div>
+                  <button onclick="appData.trainingGuides.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs px-3 py-1.5 rounded-lg">Delete</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      if (activeAdminTab === "pft") {
+        return `
+          <div class="space-y-5">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+              <h3 class="text-xs font-bold uppercase text-sky-400 mb-2">Upload Official PFT Standards PDF</h3>
+              <input type="file" accept="application/pdf" onchange="handlePdfUpload(event)" class="text-xs text-slate-300" />
+              ${appData.pftPdf.fileName ? `<p class="text-xs text-emerald-400 mt-2">Current PDF: ${appData.pftPdf.fileName}</p>` : ""}
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <h3 class="text-xs font-bold uppercase text-indigo-400">Add Custom PFT Event &amp; Scoring</h3>
+              <input id="adm-ev-name" type="text" placeholder="Event Name (e.g., Shuttle Run 4x10m)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              <select id="adm-ev-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                <option value="higher_better">Higher Number = Better (Push-ups, Sit-ups, Pull-ups)</option>
+                <option value="lower_better">Lower Time = Better (Running / Sprint Seconds)</option>
+              </select>
+              <div class="grid grid-cols-3 gap-2">
+                <input id="adm-ev-full" type="number" placeholder="100% Target" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                <input id="adm-ev-pass" type="number" placeholder="Min Pass" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                <input id="adm-ev-max" type="number" value="100" placeholder="Max Marks" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              </div>
+              <button onclick="addPftEvent()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ Add PFT Event</button>
+            </div>
+
+            <div class="space-y-2">
+              ${appData.pftEvents.map((ev, idx) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs">
+                  <div>
+                    <strong class="text-white">${ev.name}</strong>
+                    <span class="text-slate-400 ml-2">(Full: ${ev.targetFull} | Pass: ${ev.minPass} | Max: ${ev.maxMarks})</span>
+                  </div>
+                  <button onclick="appData.pftEvents.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-2.5 py-1 rounded-lg">Delete</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="space-y-5">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+            <h3 class="text-xs font-bold uppercase text-amber-400">Change Admin Password</h3>
+            <input id="adm-new-pass" type="text" placeholder="Enter New Admin Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+            <button onclick="changeAdminPassword()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">Update Password</button>
+          </div>
+
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+            <h3 class="text-xs font-bold uppercase text-sky-400">Connect Firebase Realtime Database (Live Sync)</h3>
+            <p class="text-[11px] text-slate-400">Paste your Firebase Web App config JSON object below to sync all updates across devices.</p>
+            <textarea id="adm-fb-config" rows="5" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"..."}' class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white">${appData.firebaseConfig ? JSON.stringify(appData.firebaseConfig, null, 2) : ""}</textarea>
+            <button onclick="saveFirebaseConfig()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">Connect &amp; Sync Firebase</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handlePhotoUpload(event, key) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        appData.creator[key] = e.target.result;
+        saveData();
+        alert("Photo updated!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveGeneralSettings() {
+      appData.siteTitle = document.getElementById("adm-site-title").value.trim() || "Physical Training and Fitness System";
+      appData.creator.name = document.getElementById("adm-creator-name").value.trim() || "40218 Sgt Suranga";
+      appData.creator.qualifications = document.getElementById("adm-creator-quals").value.split("\n").map(s => s.trim()).filter(Boolean);
+      saveData();
+      alert("General settings saved!");
+    }
+
+    function addNewGuide() {
+      const category = document.getElementById("adm-g-cat").value.trim();
+      const title = document.getElementById("adm-g-title").value.trim();
+      const summary = document.getElementById("adm-g-sum").value.trim();
+      const content = document.getElementById("adm-g-body").value.trim();
+      if (!category || !title || !content) return alert("Please fill Category, Title, and Content.");
+      appData.trainingGuides.push({ id: "guide-" + Date.now(), category, title, summary, content });
+      saveData();
+    }
+
+    function handlePdfUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        appData.pftPdf = { fileName: file.name, dataUrl: e.target.result };
+        saveData();
+        alert("PFT PDF Uploaded!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addPftEvent() {
+      const name = document.getElementById("adm-ev-name").value.trim();
+      const type = document.getElementById("adm-ev-type").value;
+      const targetFull = parseFloat(document.getElementById("adm-ev-full").value);
+      const minPass = parseFloat(document.getElementById("adm-ev-pass").value);
+      const maxMarks = parseFloat(document.getElementById("adm-ev-max").value) || 100;
+      if (!name || isNaN(targetFull) || isNaN(minPass)) return alert("Please fill all event values.");
+      appData.pftEvents.push({ id: "ev-" + Date.now(), name, type, targetFull, minPass, maxMarks });
+      saveData();
+    }
+
+    function changeAdminPassword() {
+      const np = document.getElementById("adm-new-pass").value.trim();
+      if (!np) return alert("Enter a valid password.");
+      appData.adminPassword = np;
+      saveData();
+      alert("Admin password changed successfully!");
+    }
+
+    function saveFirebaseConfig() {
+      try {
+        const raw = document.getElementById("adm-fb-config").value.trim();
+        appData.firebaseConfig = raw ? JSON.parse(raw) : null;
+        saveData();
+        initFirebaseIfConfigured();
+        alert("Firebase configuration saved and connected!");
+      } catch (e) {
+        alert("Invalid JSON format. Please paste the exact Firebase config JSON.");
+      }
+    }
+
+    // =========================================================================
+    // MODALS (CREATOR & CONSULTATION)
+    // =========================================================================
+    function openCreatorModal() {
+      document.getElementById("modal-creator-photo").src = appData.creator.creatorPhoto || DEFAULT_AVATAR;
+      document.getElementById("modal-profile-photo").src = appData.creator.profilePhoto || DEFAULT_AVATAR;
+      document.getElementById("modal-creator-name").textContent = appData.creator.name;
+      document.getElementById("modal-qualifications-list").innerHTML = appData.creator.qualifications
+        .map(q => `<li class="flex items-center gap-2"><span class="text-sky-400">✔</span><span>${q}</span></li>`).join("");
+      document.getElementById("creator-modal").classList.remove("hidden");
+    }
+
+    function closeCreatorModal() {
+      document.getElementById("creator-modal").classList.add("hidden");
+    }
+
+    function openConsultModal(ptiId) {
+      activeConsultPti = appData.ptis.find(p => p.id === ptiId);
+      if (!activeConsultPti) return;
+      document.getElementById("consult-pti-target").textContent = `Instructor: ${activeConsultPti.name} (${activeConsultPti.category})`;
+      document.getElementById("consult-modal").classList.remove("hidden");
+    }
+
+    function closeConsultModal() {
+      document.getElementById("consult-modal").classList.add("hidden");
+    }
+
+    function sendWhatsAppConsultation() {
+      if (!activeConsultPti) return;
+      const sender = document.getElementById("consult-sender").value.trim() || "Trainee";
+      const q = document.getElementById("consult-question").value.trim();
+      if (!q) return alert("Please enter your question.");
+      const text = encodeURIComponent(`*Physical Training & Fitness Inquiry*\nTo: ${activeConsultPti.name}\nFrom: ${sender}\n\nQuestion: ${q}`);
+      window.open(`https://wa.me/${activeConsultPti.whatsapp}?text=${text}`, "_blank");
+      closeConsultModal();
+    }
+
+    // Initialize App
+    checkAdminUrl();
+    initFirebaseIfConfigured();
+    refreshUI();
+  </script>
+</body>
+</html>
