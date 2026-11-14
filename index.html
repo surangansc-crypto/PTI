@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Physical Training and Fitness System</title>
+  <link id="dynamic-favicon" rel="icon" type="image/png" href="" />
+  <link id="dynamic-apple-icon" rel="apple-touch-icon" href="" />
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase Realtime Database SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;700&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; }
-    .font-display { font-family: 'Oswald', sans-serif; letter-spacing: 0.03em; }
+    body { font-family: 'Inter', 'Noto Sans Sinhala', sans-serif; background-color: #090d16; color: #f1f5f9; }
+    .font-display { font-family: 'Oswald', 'Noto Sans Sinhala', sans-serif; letter-spacing: 0.02em; }
     @media print {
       body * { visibility: hidden; }
       #printable-marksheet, #printable-marksheet * { visibility: visible; }
@@ -28,68 +33,86 @@
 
   <!-- TOP NAVIGATION BAR -->
   <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-40 backdrop-blur">
-    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center shadow-lg shadow-sky-500/20">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
+    <div class="max-w-5xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <!-- Secret 5-Tap App Icon / Logo Trigger for Admin Access -->
+        <div id="secret-logo-btn" onclick="handleLogoTap()" title="Physical Training System" class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center shadow-lg shadow-sky-500/20 cursor-pointer select-none active:scale-95 transition overflow-hidden border border-slate-700">
+          <img id="header-app-icon-img" src="" alt="App Icon" class="w-full h-full object-cover" />
         </div>
-        <div>
-          <h1 id="header-site-title" class="font-display text-lg sm:text-xl font-bold text-white uppercase tracking-wide leading-tight">
+        <div onclick="goHome()" class="cursor-pointer">
+          <h1 id="header-site-title" class="font-display text-base sm:text-xl font-bold text-white uppercase leading-tight">
             Physical Training and Fitness System
           </h1>
-          <p class="text-[11px] text-sky-400 font-medium tracking-wider uppercase">SLAF Athletic &amp; Conditioning Portal</p>
+          <p id="header-subtitle" class="text-[10px] sm:text-[11px] text-sky-400 font-medium tracking-wider uppercase">
+            SLAF Athletic &amp; Conditioning Portal
+          </p>
         </div>
       </div>
 
-      <!-- Compact Creator Button Only -->
-      <button onclick="openCreatorModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-sm">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>Creator</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- Language Toggle Button -->
+        <button onclick="toggleLanguage()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 px-2.5 py-2 rounded-xl text-xs font-bold transition">
+          <span id="lang-btn-text">සිංහල</span>
+        </button>
+
+        <!-- Compact Creator Button -->
+        <button onclick="openCreatorModal()" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="creator-btn-label">Creator</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- APP ACTION BAR: INSTALL APP & SHARE LINK -->
+    <div class="bg-slate-950/90 border-t border-slate-800/80">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-center gap-3">
+        <button id="install-app-btn" onclick="triggerInstallApp()" class="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shadow">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span id="install-btn-label">Install App</span>
+        </button>
+        <button onclick="shareSystemLink()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shadow">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span id="share-btn-label">Share Link</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- BREADCRUMB NAVIGATION BAR (Visible when inside a topic) -->
+  <!-- BREADCRUMB NAVIGATION BAR -->
   <div id="breadcrumb-bar" class="hidden bg-slate-900/60 border-b border-slate-800/80">
     <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs">
       <div id="breadcrumb-trail" class="flex items-center gap-2 text-slate-400 flex-wrap"></div>
       <button onclick="goHome()" class="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
-        <span>← Home</span>
+        <span id="home-back-label">← Home</span>
       </button>
     </div>
   </div>
 
   <!-- MAIN CONTENT CONTAINER -->
-  <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto px-4 py-8"></main>
+  <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto px-4 py-7"></main>
 
   <!-- FOOTER -->
   <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
-    <span id="footer-title">Physical Training and Fitness System</span> • Structured Conditioning &amp; PFT Evaluation
+    <span id="footer-title">Physical Training and Fitness System</span>
   </footer>
 
   <!-- COMPACT CREATOR MODAL -->
   <div id="creator-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeCreatorModal()">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl relative">
-      <button onclick="closeCreatorModal()" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg p-1.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-
+      <button onclick="closeCreatorModal()" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg p-1.5">✕</button>
       <div class="flex items-center gap-3.5 mb-4">
         <img id="modal-creator-photo" src="" alt="Creator" class="w-16 h-16 rounded-xl object-cover border-2 border-sky-500 bg-slate-800" />
         <div>
-          <span class="text-[10px] uppercase tracking-widest text-sky-400 font-bold">Creator</span>
+          <span class="text-[10px] uppercase tracking-widest text-sky-400 font-bold" id="modal-creator-badge">Creator</span>
           <h3 id="modal-creator-name" class="text-base font-bold text-white mt-0.5">40218 Sgt Suranga</h3>
           <div class="flex items-center gap-2 mt-1">
             <img id="modal-profile-photo" src="" alt="Profile" class="w-6 h-6 rounded-full object-cover border border-amber-400 bg-slate-800" />
-            <span class="text-[11px] text-slate-400">Qualified PTI &amp; Sports Specialist</span>
+            <span class="text-[11px] text-slate-400">Physical Training &amp; Sports</span>
           </div>
         </div>
       </div>
-
       <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5">
-        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Courses &amp; Qualifications</p>
+        <p id="modal-qual-heading" class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Courses &amp; Qualifications</p>
         <ul id="modal-qualifications-list" class="space-y-1.5 text-xs text-slate-200"></ul>
       </div>
     </div>
@@ -99,30 +122,195 @@
   <div id="consult-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeConsultModal()">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-bold text-white">Request Fitness Advice / උපදෙස් ලබාගන්න</h3>
+        <h3 id="consult-modal-title" class="text-base font-bold text-white">Request Fitness Advice</h3>
         <button onclick="closeConsultModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
       </div>
       <p id="consult-pti-target" class="text-xs text-sky-400 mb-3 font-medium"></p>
       <div class="space-y-3">
-        <input id="consult-sender" type="text" placeholder="Your Service No / Name (ඔබේ නම හෝ අංකය)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-500 outline-none" />
+        <input id="consult-sender" type="text" placeholder="Your Service No / Name" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-500 outline-none" />
         <textarea id="consult-question" rows="3" placeholder="Write your training, fat burn, or PFT question here..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-sky-500 outline-none"></textarea>
-        <button onclick="sendWhatsAppConsultation()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
-          <span>Send via WhatsApp</span>
+        <button onclick="sendWhatsAppConsultation()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+          Send via WhatsApp
         </button>
       </div>
     </div>
   </div>
 
+  <!-- PWA INSTALL INSTRUCTION MODAL -->
+  <div id="install-guide-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl text-xs space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white" id="install-modal-heading">Install App on Your Phone</h3>
+        <button onclick="document.getElementById('install-guide-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-slate-300 leading-relaxed" id="install-modal-text"></p>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
-    // DEFAULT DATA & FIREBASE-READY STORAGE ADAPTER
+    // DEFAULT ICONS & IMAGE OPTIMIZER
     // =========================================================================
+    const DEFAULT_APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230284c7'/%3E%3Cpath d='M280 80L120 290h130l-30 142 172-212H262l18-140z' fill='%23ffffff'/%3E%3C/svg%3E";
     const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%2338bdf8'/%3E%3Cpath d='M20 88c0-17 13-30 30-30s30 13 30 30' fill='%2338bdf8'/%3E%3C/svg%3E";
+
+    function compressImageFile(file, maxSize, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > maxSize) { h = Math.round((h * maxSize) / w); w = maxSize; }
+          } else {
+            if (h > maxSize) { w = Math.round((w * maxSize) / h); h = maxSize; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL("image/png", 0.9));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // =========================================================================
+    // PWA DYNAMIC MANIFEST & ICON UPDATER
+    // =========================================================================
+    let manifestBlobUrl = null;
+    function updatePwaIconsAndManifest() {
+      const iconSrc = appData.appIcon || DEFAULT_APP_ICON;
+      const headerImg = document.getElementById("header-app-icon-img");
+      if (headerImg) headerImg.src = iconSrc;
+
+      document.getElementById("dynamic-favicon").href = iconSrc;
+      document.getElementById("dynamic-apple-icon").href = iconSrc;
+
+      if (manifestBlobUrl) URL.revokeObjectURL(manifestBlobUrl);
+      const manifest = {
+        name: appData.siteTitle || "Physical Training and Fitness System",
+        short_name: "PT Fitness",
+        start_url: window.location.href.split("#")[0].split("?")[0],
+        display: "standalone",
+        background_color: "#090d16",
+        theme_color: "#090d16",
+        icons: [
+          { src: iconSrc, sizes: "192x192", type: "image/png" },
+          { src: iconSrc, sizes: "512x512", type: "image/png" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+      manifestBlobUrl = URL.createObjectURL(blob);
+      let link = document.querySelector("link[rel='manifest']");
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "manifest";
+        document.head.appendChild(link);
+      }
+      link.href = manifestBlobUrl;
+    }
+
+    let deferredInstallPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+
+    function triggerInstallApp() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+      } else {
+        document.getElementById("install-guide-modal").classList.remove("hidden");
+      }
+    }
+
+    function shareSystemLink() {
+      const cleanUrl = window.location.href.split("#")[0].split("?")[0];
+      const title = appData.siteTitle;
+      if (navigator.share) {
+        navigator.share({ title, text: `${title} - Physical Fitness & PFT System`, url: cleanUrl }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(cleanUrl).then(() => {
+          alert(currentLang === "si" ? "ලින්ක් එක Copy විය! WhatsApp හරහා යවන්න: " + cleanUrl : "Link copied! Share via WhatsApp: " + cleanUrl);
+        });
+      }
+    }
+
+    // =========================================================================
+    // SECRET 5-TAP LOGO ACCESS & SECURITY LOCKOUT
+    // =========================================================================
+    let logoTapCount = 0;
+    let logoTapTimer = null;
+    function handleLogoTap() {
+      logoTapCount++;
+      clearTimeout(logoTapTimer);
+      if (logoTapCount >= 5) {
+        logoTapCount = 0;
+        currentView = "admin";
+        refreshUI();
+      } else {
+        logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 1500);
+      }
+    }
+
+    // =========================================================================
+    // BILINGUAL DICTIONARY (ENGLISH & SINHALA)
+    // =========================================================================
+    let currentLang = localStorage.getItem("pt_lang") || "en";
+
+    const UI_TEXT = {
+      en: {
+        langBtn: "සිංහල",
+        creatorBtn: "Creator",
+        installBtn: "Install App",
+        shareBtn: "Share Link",
+        homeBack: "← Home",
+        selectModule: "Select a Training Module",
+        selectSub: "Tap any main topic below to explore sub-topics and tools",
+        openSub: "Open Sub-Topics →",
+        coursesQual: "Courses & Qualifications",
+        askAdvice: "Request Fitness Advice",
+        installHeading: "Install App on Your Phone",
+        installBody: "1. Tap your browser menu (⋮ on Android Chrome or Share on iPhone Safari).<br><br>2. Select <strong>\"Add to Home Screen\"</strong> or <strong>\"Install App\"</strong>.<br><br>3. Your custom App Icon will be added directly to your phone screen!"
+      },
+      si: {
+        langBtn: "English",
+        creatorBtn: "නිර්මාතෘ",
+        installBtn: "ඇප් එක ගන්න",
+        shareBtn: "ලින්ක් එක යවන්න",
+        homeBack: "← මුල් පිටුව",
+        selectModule: "පුහුණු අංශය තෝරන්න",
+        selectSub: "අදාළ අනුමාතෘකා බැලීමට පහත ප්‍රධාන මාතෘකාවක් ටච් කරන්න",
+        openSub: "අනුමාතෘකා බලන්න →",
+        coursesQual: "පාඨමාලා සහ සුදුසුකම්",
+        askAdvice: "උපදෙස් ලබාගන්න",
+        installHeading: "දුරකථනයට App එකක් ලෙස ලබාගන්න",
+        installBody: "1. ඔබේ Browser එකේ ඉහළ ඇති තිත් 3 (⋮) හෝ Share බොත්තම ඔබන්න.<br><br>2. එහි ඇති <strong>\"Add to Home Screen\"</strong> හෝ <strong>\"Install App\"</strong> තෝරන්න.<br><br>3. දැන් ඔබේ දුරකථනයේ App Icon එකක් ලෙස මෙය ස්ථාපනය වේ!"
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = currentLang === "en" ? "si" : "en";
+      localStorage.setItem("pt_lang", currentLang);
+      refreshUI();
+    }
+
+    // =========================================================================
+    // PERSISTENT STORAGE & PERMANENT PASSWORD PROTECTION
+    // =========================================================================
+    const STORAGE_KEY = "slaf_pt_fitness_system_v4";
+    const PASS_LOCK_KEY = "slaf_pt_permanent_admin_pass";
+    const FB_CONFIG_KEY = "slaf_pt_firebase_config";
 
     const DEFAULT_DATA = {
       siteTitle: "Physical Training and Fitness System",
-      adminPassword: "40218",
-      firebaseConfig: null, // Paste Firebase JSON config in Admin Panel for live multi-device sync
+      siteTitleSi: "ශාරීරික පුහුණු සහ යෝග්‍යතා පද්ධතිය",
+      appIcon: DEFAULT_APP_ICON,
       creator: {
         name: "40218 Sgt Suranga",
         creatorPhoto: DEFAULT_AVATAR,
@@ -134,6 +322,40 @@
           "Aerobic Training Instructor"
         ]
       },
+      mainTopics: [
+        {
+          id: "pti",
+          titleEn: "PTI Directory & Advice",
+          titleSi: "PTI උපදේශකයින් සහ උපදෙස්",
+          descEn: "View Diploma & MIC qualified PTIs, register new instructors, and ask fitness advice.",
+          descSi: "Diploma සහ MIC සුදුසුකම් ලත් PTI උපදේශකයින් බැලීම, ලියාපදිංචිය සහ උපදෙස් ලබාගැනීම.",
+          accent: "from-sky-500 to-blue-600"
+        },
+        {
+          id: "guides",
+          titleEn: "Training Modules",
+          titleSi: "පුහුණු ක්‍රමවේද (Fat Burn / Cardio)",
+          descEn: "Structured protocols for fat burn, cardio speed work, and muscular endurance.",
+          descSi: "මේදය දහනය (Fat Burn), Cardio සහ දරාගැනීමේ හැකියාව (Endurance) වර්ධනය කිරීමේ ක්‍රම.",
+          accent: "from-emerald-500 to-teal-600"
+        },
+        {
+          id: "calculators",
+          titleEn: "Fitness Calculators",
+          titleSi: "ශාරීරික මිනුම් ගණනය කිරීම්",
+          descEn: "Calculate BMI, Navy Body Fat %, Target Heart Rate zones, and Daily Hydration.",
+          descSi: "BMI, ශරීර මේද ප්‍රතිශතය, හෘද ස්පන්දන කලාප සහ දෛනික ජල අවශ්‍යතාවය ගණනය කිරීම.",
+          accent: "from-amber-500 to-orange-600"
+        },
+        {
+          id: "pft",
+          titleEn: "Physical Fitness Test (PFT)",
+          titleSi: "ශාරීරික යෝග්‍යතා පරීක්ෂණය (PFT)",
+          descEn: "Access PFT PDF standards, auto-calculate event marks, and generate marksheets.",
+          descSi: "PFT PDF ලේඛනය, ස්වයංක්‍රීය ලකුණු ගණනය සහ නිල ලකුණු පත්‍රිකාව (Marksheet) ලබාගැනීම.",
+          accent: "from-indigo-500 to-purple-600"
+        }
+      ],
       ptis: [
         {
           id: "pti-1",
@@ -155,48 +377,62 @@
       trainingGuides: [
         {
           id: "guide-fatburn",
-          category: "Fat Burn",
-          title: "Metabolic Conditioning & Fat Burn Protocol",
-          summary: "Scientific approach to reducing body fat percentage while preserving lean muscle mass.",
-          content: "1. Maintain Target Heart Rate between 65% - 75% of Max HR during steady-state sessions (35-45 mins).\n2. Incorporate HIIT (High-Intensity Interval Training) twice a week: 30 sec sprint / 45 sec active walk x 10 rounds.\n3. Maintain a controlled calorie deficit of 300-500 kcal/day with high protein intake (1.6g - 2.0g per kg bodyweight).\n4. Prioritize 7-8 hours of recovery sleep to regulate cortisol and optimize fat oxidation."
+          categoryEn: "Fat Burn",
+          categorySi: "මේදය දහනය (Fat Burn)",
+          titleEn: "Metabolic Conditioning & Fat Burn Protocol",
+          titleSi: "ශරීරයේ අනවශ්‍ය මේදය දහනය කිරීමේ පුහුණු ක්‍රමවේදය",
+          summaryEn: "Scientific approach to reducing body fat percentage while preserving lean muscle.",
+          summarySi: "මාංශ පේශි ආරක්ෂා කරගනිමින් මේදය අඩු කිරීමේ විද්‍යාත්මක ක්‍රම.",
+          contentEn: "1. Maintain Target Heart Rate between 65% - 75% of Max HR during steady-state sessions (35-45 mins).\n2. Incorporate HIIT twice a week: 30 sec sprint / 45 sec active walk x 10 rounds.\n3. Maintain a controlled calorie deficit of 300-500 kcal/day with adequate protein.\n4. Prioritize 7-8 hours of quality sleep for hormonal recovery.",
+          contentSi: "1. මිනිත්තු 35-45 කාලයක් උපරිම හෘද ස්පන්දන වේගයෙන් 65% - 75% අතර පවත්වා ගනිමින් ව්‍යායාම කරන්න.\n2. සතියකට දෙවරක් HIIT පුහුණුව (තත්පර 30 වේගවත් දිවීම / තත්පර 45 ඇවිදීම වට 10ක්) සිදු කරන්න.\n3. දෛනික කැලරි ප්‍රමාණය 300-500 කින් පාලනය කර ප්‍රෝටීන් බහුල ආහාර ගන්න.\n4. දිනකට පැය 7-8 ක සුව නින්දක් ලබාගන්න."
         },
         {
           id: "guide-cardio",
-          category: "Cardio",
-          title: "Aerobic Capacity & 2.4km Run Speed Work",
-          summary: "Structured cardiovascular drills to improve VO2 max and PFT run timings.",
-          content: "1. Tempo Runs: Run 20 minutes at a comfortably hard pace (80-85% effort) once per week.\n2. 400m Track Repeats: Complete 6 x 400m at faster than target 2.4km race pace with 90 seconds rest.\n3. Breathing Rhythm: Practice 2:2 rhythmic breathing (2 steps inhale, 2 steps exhale) to delay diaphragm fatigue.\n4. Dynamic Warm-up: Always perform 10 minutes of leg swings, high knees, and butt kicks before speed work."
+          categoryEn: "Cardio",
+          categorySi: "හෘද ස්පන්දන පුහුණුව (Cardio)",
+          titleEn: "Aerobic Capacity & 2.4km Run Speed Work",
+          titleSi: "2.4km ධාවන කාලය අඩු කරගැනීමේ Cardio පුහුණුව",
+          summaryEn: "Structured cardiovascular drills to improve VO2 max and PFT run timings.",
+          summarySi: "හුස්ම ගැනීමේ ධාරිතාවය (VO2 Max) සහ ධාවන වේගය වැඩි කරන අභ්‍යාස.",
+          contentEn: "1. Tempo Runs: Run 20 minutes at a comfortably hard pace (80-85% effort) once per week.\n2. 400m Track Repeats: Complete 6 x 400m faster than target 2.4km pace with 90s rest.\n3. Breathing Rhythm: Practice 2:2 rhythmic breathing (2 steps inhale, 2 steps exhale).\n4. Dynamic Warm-up: 10 mins of leg swings, high knees, and butt kicks before running.",
+          contentSi: "1. Tempo Runs: සතියකට වරක් මිනිත්තු 20ක් එකම වේගයකින් (80-85% ශක්තියෙන්) දුවන්න.\n2. 400m Repeats: මීටර් 400 වට 6ක් වේගයෙන් දිවීම (වටයක් අවසානයේ තත්පර 90ක විවේකයක් සමඟ).\n3. හුස්ම ගැනීමේ රිද්මය: පියවර 2ක් හුස්ම ගැනීම සහ පියවර 2ක් හුස්ම පිටකිරීම (2:2) පුහුණු වන්න.\n4. දිවීමට පෙර මිනිත්තු 10ක් Dynamic Warm-up ව්‍යායාම අනිවාර්යයෙන් සිදු කරන්න."
         },
         {
           id: "guide-endurance",
-          category: "Endurance",
-          title: "Muscular & Stamina Endurance Building",
-          summary: "Progressive overload circuits for Push-ups, Sit-ups, Pull-ups, and long-distance stamina.",
-          content: "1. Grease-the-Groove Method: Perform 50% of your max Push-ups/Pull-ups 4 times throughout the day with full recovery.\n2. Pyramid Sets: 1-2-3-4-5-4-3-2-1 Pull-ups with 30 seconds rest between rungs.\n3. Core Stability: Hold front plank for 60s, side planks 45s each side, and 25 hollow-body rocks x 3 rounds.\n4. Long Slow Distance (LSD): 45-60 minute steady aerobic run at conversational pace every weekend."
+          categoryEn: "Endurance",
+          categorySi: "දරාගැනීමේ හැකියාව (Endurance)",
+          titleEn: "Muscular & Stamina Endurance Building",
+          titleSi: "මාංශ පේශි ශක්තිය සහ Stamina වර්ධනය කිරීම",
+          summaryEn: "Progressive circuits for Push-ups, Sit-ups, Pull-ups, and long-distance stamina.",
+          summarySi: "Push-ups, Sit-ups, Pull-ups ගණන වැඩි කරගැනීමේ පුහුණු ක්‍රම.",
+          contentEn: "1. Grease-the-Groove: Perform 50% of max Push-ups/Pull-ups 4 times daily with full rest.\n2. Pyramid Sets: 1-2-3-4-5-4-3-2-1 Pull-ups with 30 seconds rest between sets.\n3. Core Stability: Front plank 60s, side planks 45s each side x 3 rounds.\n4. Long Slow Distance (LSD): 45-60 min steady aerobic run every weekend.",
+          contentSi: "1. Grease-the-Groove ක්‍රමය: ඔබට කළ හැකි උපරිම Push-ups/Pull-ups ගණනින් 50% බැගින් දිනකට 4 වතාවක් සිදු කරන්න.\n2. Pyramid Sets: 1-2-3-4-5-4-3-2-1 ආකාරයට තත්පර 30 විවේක සහිතව Pull-ups කරන්න.\n3. Core අභ්‍යාස: Front Plank තත්පර 60ක් සහ Side Plank තත්පර 45 බැගින් වට 3ක් කරන්න.\n4. සති අන්තයේ මිනිත්තු 45-60 ක සෙමින් දිවීමේ (Long Slow Distance) පුහුණුවක් කරන්න."
         }
       ],
-      pftPdf: {
-        fileName: "",
-        dataUrl: ""
-      },
+      pftPdf: { fileName: "", dataUrl: "" },
       pftEvents: [
-        { id: "ev-run", name: "2.4 km Run (Seconds)", type: "lower_better", targetFull: 540, minPass: 720, maxMarks: 100 },
-        { id: "ev-push", name: "Push-ups (2 Mins)", type: "higher_better", targetFull: 55, minPass: 30, maxMarks: 100 },
-        { id: "ev-sit", name: "Sit-ups (2 Mins)", type: "higher_better", targetFull: 60, minPass: 35, maxMarks: 100 },
-        { id: "ev-pull", name: "Pull-ups (Max Reps)", type: "higher_better", targetFull: 12, minPass: 5, maxMarks: 100 }
+        { id: "ev-run", nameEn: "2.4 km Run (Seconds)", nameSi: "2.4 km දිවීම (තත්පර)", type: "lower_better", targetFull: 540, minPass: 720, maxMarks: 100 },
+        { id: "ev-push", nameEn: "Push-ups (2 Mins)", nameSi: "Push-ups (මිනිත්තු 2)", type: "higher_better", targetFull: 55, minPass: 30, maxMarks: 100 },
+        { id: "ev-sit", nameEn: "Sit-ups (2 Mins)", nameSi: "Sit-ups (මිනිත්තු 2)", type: "higher_better", targetFull: 60, minPass: 35, maxMarks: 100 },
+        { id: "ev-pull", nameEn: "Pull-ups (Max Reps)", nameSi: "Pull-ups (උපරිම වාර)", type: "higher_better", targetFull: 12, minPass: 5, maxMarks: 100 }
       ]
     };
 
-    const STORAGE_KEY = "slaf_pt_fitness_system_v2";
+    // Load saved data & permanent password separately so password NEVER resets
     let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(DEFAULT_DATA));
+    let permanentAdminPassword = localStorage.getItem(PASS_LOCK_KEY) || "40218";
+    let savedFirebaseConfig = JSON.parse(localStorage.getItem(FB_CONFIG_KEY) || "null");
+
     let dbRef = null;
+    let passRef = null;
 
     function initFirebaseIfConfigured() {
-      if (appData.firebaseConfig && typeof firebase !== "undefined") {
+      if (savedFirebaseConfig && typeof firebase !== "undefined") {
         try {
           if (!firebase.apps.length) {
-            firebase.initializeApp(appData.firebaseConfig);
+            firebase.initializeApp(savedFirebaseConfig);
           }
+          // Sync main content data
           dbRef = firebase.database().ref("pt_fitness_system_data");
           dbRef.on("value", (snapshot) => {
             const val = snapshot.val();
@@ -204,6 +440,16 @@
               appData = { ...DEFAULT_DATA, ...val };
               localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
               refreshUI();
+            }
+          });
+
+          // Sync permanent admin password separately so it never resets
+          passRef = firebase.database().ref("pt_fitness_system_security/adminPassword");
+          passRef.on("value", (snapshot) => {
+            const remotePass = snapshot.val();
+            if (remotePass && typeof remotePass === "string" && remotePass.trim().length > 0) {
+              permanentAdminPassword = remotePass.trim();
+              localStorage.setItem(PASS_LOCK_KEY, permanentAdminPassword);
             }
           });
         } catch (err) {
@@ -221,23 +467,38 @@
     }
 
     // =========================================================================
-    // NAVIGATION & STATE
+    // NAVIGATION, SECURITY & RENDER ENGINE
     // =========================================================================
-    let currentView = "home"; // home | subtopics | pti_list | guide_detail | calculators | pft_system | admin
+    let currentView = "home";
     let selectedMainTopic = null;
     let selectedSubParam = null;
     let isAdminAuthenticated = false;
+    let failedAttempts = 0;
+    let lockoutUntil = 0;
+    let adminIdleTimer = null;
     let activeConsultPti = null;
+
+    function resetAdminIdleTimer() {
+      clearTimeout(adminIdleTimer);
+      if (isAdminAuthenticated) {
+        adminIdleTimer = setTimeout(() => {
+          isAdminAuthenticated = false;
+          if (currentView === "admin") refreshUI();
+        }, 15 * 60 * 1000); // 15-min auto-lock
+      }
+    }
+    ["click", "keydown", "touchstart"].forEach(evt => window.addEventListener(evt, resetAdminIdleTimer));
 
     function checkAdminUrl() {
       const params = new URLSearchParams(window.location.search);
-      if (params.has("admin") || window.location.hash === "#admin") {
+      if (params.has("admin") || window.location.hash.toLowerCase().includes("admin")) {
         currentView = "admin";
       }
     }
+    window.addEventListener("hashchange", () => { checkAdminUrl(); refreshUI(); });
 
     function goHome() {
-      if (window.location.search.includes("admin")) {
+      if (window.location.search.includes("admin") || window.location.hash.includes("admin")) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       currentView = "home";
@@ -258,10 +519,25 @@
       refreshUI();
     }
 
+    function t(enVal, siVal) {
+      return currentLang === "si" && siVal ? siVal : enVal;
+    }
+
     function refreshUI() {
-      document.getElementById("header-site-title").textContent = appData.siteTitle;
-      document.getElementById("footer-title").textContent = appData.siteTitle;
-      document.title = appData.siteTitle;
+      updatePwaIconsAndManifest();
+      const ui = UI_TEXT[currentLang];
+      const title = t(appData.siteTitle, appData.siteTitleSi);
+      document.getElementById("header-site-title").textContent = title;
+      document.getElementById("footer-title").textContent = title;
+      document.title = title;
+
+      document.getElementById("lang-btn-text").textContent = ui.langBtn;
+      document.getElementById("creator-btn-label").textContent = ui.creatorBtn;
+      document.getElementById("install-btn-label").textContent = ui.installBtn;
+      document.getElementById("share-btn-label").textContent = ui.shareBtn;
+      document.getElementById("home-back-label").textContent = ui.homeBack;
+      document.getElementById("install-modal-heading").textContent = ui.installHeading;
+      document.getElementById("install-modal-text").innerHTML = ui.installBody;
 
       const bcBar = document.getElementById("breadcrumb-bar");
       const bcTrail = document.getElementById("breadcrumb-trail");
@@ -283,83 +559,48 @@
     }
 
     function buildBreadcrumb() {
-      let html = `<button onclick="goHome()" class="hover:text-white">Home</button>`;
+      let html = `<button onclick="goHome()" class="hover:text-white">${currentLang === "si" ? "මුල් පිටුව" : "Home"}</button>`;
       if (selectedMainTopic && currentView !== "admin") {
-        const names = {
-          pti: "PTI Directory & Registration",
-          guides: "Training Modules",
-          calculators: "Fitness Calculators",
-          pft: "Physical Fitness Test (PFT)"
-        };
-        html += ` <span>/</span> <button onclick="openMainTopic('${selectedMainTopic}')" class="hover:text-white">${names[selectedMainTopic]}</button>`;
+        const topicObj = appData.mainTopics.find(m => m.id === selectedMainTopic);
+        const label = topicObj ? t(topicObj.titleEn, topicObj.titleSi) : selectedMainTopic;
+        html += ` <span>/</span> <button onclick="openMainTopic('${selectedMainTopic}')" class="hover:text-white">${label}</button>`;
       }
       if (currentView === "admin") {
         html += ` <span>/</span> <span class="text-amber-400 font-semibold">Admin Panel</span>`;
-      } else if (currentView !== "subtopics" && selectedSubParam) {
-        html += ` <span>/</span> <span class="text-sky-400 font-semibold">${selectedSubParam}</span>`;
       }
       return html;
     }
 
     // =========================================================================
-    // 1. CLEAN HOME SCREEN (Main Topic Buttons Only)
+    // 1. CLEAN HOME SCREEN
     // =========================================================================
     function renderHome() {
-      const topics = [
-        {
-          id: "pti",
-          title: "PTI Directory & Advice",
-          si: "පුහුණු උපදේශකයින් (Diploma & MIC PTIs)",
-          desc: "View Diploma & MIC qualified PTIs, register new instructors, and request personal fitness guidance.",
-          accent: "from-sky-500 to-blue-600",
-          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`
-        },
-        {
-          id: "guides",
-          title: "Training Modules",
-          si: "පුහුණු ක්‍රමවේද (Fat Burn, Cardio & Endurance)",
-          desc: "Structured protocols for fat loss, cardiovascular conditioning, and muscular endurance.",
-          accent: "from-emerald-500 to-teal-600",
-          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>`
-        },
-        {
-          id: "calculators",
-          title: "Fitness Calculators",
-          si: "ශාරීරික මිනුම් ගණනය කිරීම් (BMI, Heart Rate, Body Fat)",
-          desc: "Calculate BMI, Navy Body Fat %, Target Heart Rate zones, Daily Hydration, and Calorie needs.",
-          accent: "from-amber-500 to-orange-600",
-          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>`
-        },
-        {
-          id: "pft",
-          title: "Physical Fitness Test (PFT)",
-          si: "ශාරීරික යෝග්‍යතා පරීක්ෂණය සහ ලකුණු පත්‍රිකාව",
-          desc: "Access official PFT PDF standards, auto-calculate event scores, and generate printable marksheets.",
-          accent: "from-indigo-500 to-purple-600",
-          icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`
-        }
-      ];
+      const ui = UI_TEXT[currentLang];
+      const icons = {
+        pti: `<path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>`,
+        guides: `<path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>`,
+        calculators: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>`,
+        pft: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`
+      };
 
       return `
         <div class="max-w-3xl mx-auto">
-          <div class="text-center mb-8">
-            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white uppercase tracking-wide">Select a Training Module</h2>
-            <p class="text-xs sm:text-sm text-slate-400 mt-1">Tap any main topic below to explore sub-topics and tools</p>
+          <div class="text-center mb-7">
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white uppercase">${ui.selectModule}</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">${ui.selectSub}</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            ${topics.map(t => `
-              <button onclick="openMainTopic('${t.id}')" class="group text-left bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-sky-500/60 rounded-2xl p-6 transition-all shadow-lg hover:shadow-sky-500/10 flex flex-col justify-between">
+            ${appData.mainTopics.map(topic => `
+              <button onclick="openMainTopic('${topic.id}')" class="group text-left bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-sky-500/60 rounded-2xl p-5 transition-all shadow-lg flex flex-col justify-between">
                 <div>
-                  <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${t.accent} flex items-center justify-center mb-4 shadow-md group-hover:scale-105 transition-transform">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${t.icon}</svg>
+                  <div class="w-11 h-11 rounded-xl bg-gradient-to-br ${topic.accent || 'from-sky-500 to-blue-600'} flex items-center justify-center mb-3.5 shadow-md group-hover:scale-105 transition-transform">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${icons[topic.id] || icons.guides}</svg>
                   </div>
-                  <h3 class="font-display text-xl font-bold text-white uppercase tracking-wide group-hover:text-sky-400 transition-colors">${t.title}</h3>
-                  <p class="text-xs text-sky-400/90 font-medium mt-0.5">${t.si}</p>
-                  <p class="text-xs text-slate-400 mt-2.5 leading-relaxed">${t.desc}</p>
+                  <h3 class="font-display text-lg sm:text-xl font-bold text-white uppercase group-hover:text-sky-400 transition-colors">${t(topic.titleEn, topic.titleSi)}</h3>
+                  <p class="text-xs text-slate-400 mt-2 leading-relaxed">${t(topic.descEn, topic.descSi)}</p>
                 </div>
-                <div class="mt-5 flex items-center text-xs font-semibold text-slate-300 group-hover:text-white">
-                  <span>Open Sub-Topics</span>
-                  <span class="ml-1.5 group-hover:translate-x-1 transition-transform">→</span>
+                <div class="mt-4 text-xs font-semibold text-sky-400 group-hover:text-white">
+                  ${ui.openSub}
                 </div>
               </button>
             `).join("")}
@@ -372,31 +613,34 @@
     // 2. SUB-TOPICS DRILL-DOWN VIEW
     // =========================================================================
     function renderSubtopics() {
+      const topicObj = appData.mainTopics.find(m => m.id === selectedMainTopic);
+      const heading = topicObj ? t(topicObj.titleEn, topicObj.titleSi) : "";
+
       if (selectedMainTopic === "pti") {
         return `
           <div class="max-w-2xl mx-auto space-y-3">
-            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">PTI Directory &amp; Consultation</h2>
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">${heading}</h2>
             <button onclick="openSubTopic('pti_list', 'Diploma')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500 rounded-xl p-5 flex items-center justify-between transition">
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Category 01</span>
-                <h3 class="text-base font-bold text-white mt-0.5">Diploma Qualified PTIs (ඩිප්ලෝමාධාරී PTI උපදේශකයින්)</h3>
-                <p class="text-xs text-slate-400 mt-1">View registered Diploma in Sports Science PTIs &amp; request advice</p>
+                <h3 class="text-base font-bold text-white mt-0.5">${t("Diploma Qualified PTIs", "ඩිප්ලෝමාධාරී PTI උපදේශකයින් (Diploma PTIs)")}</h3>
+                <p class="text-xs text-slate-400 mt-1">${t("View Diploma in Sports Science PTIs & ask advice", "ඩිප්ලෝමා පාඨමාලාධාරී PTI වරුන් බලන්න සහ උපදෙස් ගන්න")}</p>
               </div>
               <span class="text-sky-400 font-bold text-lg">→</span>
             </button>
             <button onclick="openSubTopic('pti_list', 'MIC')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500 rounded-xl p-5 flex items-center justify-between transition">
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Category 02</span>
-                <h3 class="text-base font-bold text-white mt-0.5">MIC Qualified PTIs (MIC පාඨමාලාධාරී PTI උපදේශකයින්)</h3>
-                <p class="text-xs text-slate-400 mt-1">View registered MIC Physical Training Instructors &amp; request advice</p>
+                <h3 class="text-base font-bold text-white mt-0.5">${t("MIC Qualified PTIs", "MIC පාඨමාලාධාරී PTI උපදේශකයින් (MIC PTIs)")}</h3>
+                <p class="text-xs text-slate-400 mt-1">${t("View MIC Physical Training Instructors & ask advice", "MIC සුදුසුකම් ලත් PTI වරුන් බලන්න සහ උපදෙස් ගන්න")}</p>
               </div>
               <span class="text-amber-400 font-bold text-lg">→</span>
             </button>
             <button onclick="openSubTopic('pti_list', 'Register')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 rounded-xl p-5 flex items-center justify-between transition">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Instructor Onboarding</span>
-                <h3 class="text-base font-bold text-white mt-0.5">Register as a PTI (නව PTI ලියාපදිංචිය - Diploma / MIC)</h3>
-                <p class="text-xs text-slate-400 mt-1">Register separately under Diploma or MIC category</p>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Registration</span>
+                <h3 class="text-base font-bold text-white mt-0.5">${t("Register as a PTI (Diploma / MIC)", "නව PTI උපදේශක ලියාපදිංචිය (Diploma / MIC)")}</h3>
+                <p class="text-xs text-slate-400 mt-1">${t("Register separately under Diploma or MIC category", "Diploma හෝ MIC කාණ්ඩය යටතේ වෙනම ලියාපදිංචි වන්න")}</p>
               </div>
               <span class="text-emerald-400 font-bold text-lg">→</span>
             </button>
@@ -407,13 +651,13 @@
       if (selectedMainTopic === "guides") {
         return `
           <div class="max-w-2xl mx-auto space-y-3">
-            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Training Modules &amp; Guides</h2>
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">${heading}</h2>
             ${appData.trainingGuides.map(g => `
               <button onclick="openSubTopic('guide_detail', '${g.id}')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 rounded-xl p-5 flex items-center justify-between transition">
                 <div>
-                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">${g.category}</span>
-                  <h3 class="text-base font-bold text-white mt-0.5">${g.title}</h3>
-                  <p class="text-xs text-slate-400 mt-1">${g.summary}</p>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">${t(g.categoryEn, g.categorySi)}</span>
+                  <h3 class="text-base font-bold text-white mt-0.5">${t(g.titleEn, g.titleSi)}</h3>
+                  <p class="text-xs text-slate-400 mt-1">${t(g.summaryEn, g.summarySi)}</p>
                 </div>
                 <span class="text-emerald-400 font-bold text-lg">→</span>
               </button>
@@ -424,19 +668,19 @@
 
       if (selectedMainTopic === "calculators") {
         const calcs = [
-          { id: "bmi", title: "BMI Calculator (ශරීර ස්කන්ධ දර්ශකය)", desc: "Calculate Body Mass Index and weight category" },
-          { id: "bodyfat", title: "Navy Body Fat % Calculator", desc: "Estimate body fat percentage using circumference measurements" },
-          { id: "hr", title: "Target Heart Rate (THR) Zones", desc: "Find Fat Burn, Cardio, and Peak performance pulse zones" },
-          { id: "hydration", title: "Daily Hydration & Calorie Needs", desc: "Calculate daily water intake (Liters) and TDEE calories" }
+          { id: "bmi", titleEn: "BMI Calculator", titleSi: "BMI ගණනය කිරීම (ශරීර ස්කන්ධ දර්ශකය)", descEn: "Calculate Body Mass Index", descSi: "උස සහ බර අනුව BMI අගය සොයන්න" },
+          { id: "bodyfat", titleEn: "Navy Body Fat % Calculator", titleSi: "ශරීර මේද ප්‍රතිශතය (Body Fat %)", descEn: "Estimate body fat % via measurements", descSi: "ඉණ සහ බෙල්ල මැනීමෙන් මේද ප්‍රතිශතය සොයන්න" },
+          { id: "hr", titleEn: "Target Heart Rate (THR) Zones", titleSi: "හෘද ස්පන්දන කලාප (Heart Rate Zones)", descEn: "Fat Burn, Cardio & Peak pulse zones", descSi: "Fat Burn සහ Cardio සඳහා සුදුසු හෘද ස්පන්දන වේගය" },
+          { id: "hydration", titleEn: "Daily Hydration & Calorie Needs", titleSi: "දෛනික ජල සහ කැලරි අවශ්‍යතාවය", descEn: "Daily water (Liters) & TDEE calories", descSi: "දිනකට පානය කළ යුතු ජල ප්‍රමාණය සහ කැලරි" }
         ];
         return `
           <div class="max-w-2xl mx-auto space-y-3">
-            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Fitness &amp; Body Calculators</h2>
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">${heading}</h2>
             ${calcs.map(c => `
               <button onclick="openSubTopic('calculators', '${c.id}')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500 rounded-xl p-5 flex items-center justify-between transition">
                 <div>
-                  <h3 class="text-base font-bold text-white">${c.title}</h3>
-                  <p class="text-xs text-slate-400 mt-1">${c.desc}</p>
+                  <h3 class="text-base font-bold text-white">${t(c.titleEn, c.titleSi)}</h3>
+                  <p class="text-xs text-slate-400 mt-1">${t(c.descEn, c.descSi)}</p>
                 </div>
                 <span class="text-amber-400 font-bold text-lg">→</span>
               </button>
@@ -448,20 +692,20 @@
       if (selectedMainTopic === "pft") {
         return `
           <div class="max-w-2xl mx-auto space-y-3">
-            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">Physical Fitness Test (PFT) System</h2>
+            <h2 class="font-display text-2xl font-bold text-white uppercase mb-4">${heading}</h2>
             <button onclick="openSubTopic('pft_system', 'scorer')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 rounded-xl p-5 flex items-center justify-between transition">
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400">Auto Evaluation</span>
-                <h3 class="text-base font-bold text-white mt-0.5">PFT Auto-Scorer &amp; Marksheet Generator</h3>
-                <p class="text-xs text-slate-400 mt-1">Enter candidate performance to compute marks &amp; print official marksheet</p>
+                <h3 class="text-base font-bold text-white mt-0.5">${t("PFT Auto-Scorer & Marksheet Generator", "PFT ස්වයංක්‍රීය ලකුණු ගණනය සහ Marksheet")}</h3>
+                <p class="text-xs text-slate-400 mt-1">${t("Enter candidate results to compute marks & print marksheet", "දක්ෂතා ඇතුළත් කර ලකුණු ගණනය කර Marksheet එක ලබාගන්න")}</p>
               </div>
               <span class="text-indigo-400 font-bold text-lg">→</span>
             </button>
             <button onclick="openSubTopic('pft_system', 'pdf')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500 rounded-xl p-5 flex items-center justify-between transition">
               <div>
                 <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Official Reference</span>
-                <h3 class="text-base font-bold text-white mt-0.5">View / Download PFT Standards PDF</h3>
-                <p class="text-xs text-slate-400 mt-1">Open uploaded Physical Fitness Test circular and scoring table PDF</p>
+                <h3 class="text-base font-bold text-white mt-0.5">${t("View / Download PFT Standards PDF", "PFT නිල PDF ලේඛනය බලන්න / බාගත කරන්න")}</h3>
+                <p class="text-xs text-slate-400 mt-1">${t("Open uploaded Physical Fitness Test circular PDF", "ඇතුළත් කර ඇති PFT ලකුණු සටහන් PDF එක බලන්න")}</p>
               </div>
               <span class="text-sky-400 font-bold text-lg">→</span>
             </button>
@@ -471,40 +715,40 @@
     }
 
     // =========================================================================
-    // 3. PTI DIRECTORY & SEPARATE REGISTRATION
+    // 3. PTI DIRECTORY & REGISTRATION
     // =========================================================================
     function renderPtiList() {
       if (selectedSubParam === "Register") {
         return `
           <div class="max-w-lg mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">PTI Registration Form</h2>
-            <p class="text-xs text-slate-400 mb-5">Register separately under Diploma or MIC PTI category</p>
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">${t("PTI Registration Form", "PTI උපදේශක ලියාපදිංචි පෝරමය")}</h2>
+            <p class="text-xs text-slate-400 mb-5">${t("Register separately under Diploma or MIC category", "Diploma හෝ MIC කාණ්ඩය යටතේ වෙනම ලියාපදිංචි වන්න")}</p>
             <div class="space-y-3.5">
               <div>
-                <label class="block text-xs text-slate-300 mb-1">Category (තෝරන්න)</label>
+                <label class="block text-xs text-slate-300 mb-1">${t("Category", "කාණ්ඩය තෝරන්න")}</label>
                 <select id="reg-pti-cat" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
                   <option value="Diploma">Diploma Qualified PTI</option>
                   <option value="MIC">MIC Qualified PTI</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-slate-300 mb-1">Service No, Rank &amp; Name</label>
+                <label class="block text-xs text-slate-300 mb-1">${t("Service No, Rank & Name", "සේවා අංකය, නිලය සහ නම")}</label>
                 <input id="reg-pti-name" type="text" placeholder="e.g., 40218 Sgt Suranga" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               </div>
               <div>
-                <label class="block text-xs text-slate-300 mb-1">Qualifications / Courses</label>
+                <label class="block text-xs text-slate-300 mb-1">${t("Qualifications / Courses", "සුදුසුකම් / පාඨමාලා")}</label>
                 <input id="reg-pti-qual" type="text" placeholder="e.g., Dip Sports NVQ IV, PTI" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               </div>
               <div>
-                <label class="block text-xs text-slate-300 mb-1">Specialization</label>
+                <label class="block text-xs text-slate-300 mb-1">${t("Specialization", "විශේෂිත පුහුණු අංශය")}</label>
                 <input id="reg-pti-spec" type="text" placeholder="e.g., Aerobic Conditioning, Fat Burn, PFT" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               </div>
               <div>
-                <label class="block text-xs text-slate-300 mb-1">WhatsApp Number (with 94)</label>
+                <label class="block text-xs text-slate-300 mb-1">${t("WhatsApp Number (with 94)", "WhatsApp අංකය (94 සමඟ)")}</label>
                 <input id="reg-pti-wa" type="text" placeholder="947XXXXXXXX" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               </div>
               <button onclick="submitNewPti()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
-                Complete Registration
+                ${t("Complete Registration", "ලියාපදිංචි වන්න")}
               </button>
             </div>
           </div>
@@ -516,7 +760,7 @@
         <div class="max-w-3xl mx-auto">
           <div class="flex items-center justify-between mb-5">
             <h2 class="font-display text-2xl font-bold text-white uppercase">${selectedSubParam} Qualified PTIs</h2>
-            <button onclick="openSubTopic('pti_list', 'Register')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl">+ Register PTI</button>
+            <button onclick="openSubTopic('pti_list', 'Register')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl">+ ${t("Register PTI", "ලියාපදිංචි වන්න")}</button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             ${filtered.length ? filtered.map(p => `
@@ -528,7 +772,7 @@
                   <p class="text-xs text-slate-400 mt-2"><strong class="text-slate-300">Focus:</strong> ${p.specialty}</p>
                 </div>
                 <button onclick="openConsultModal('${p.id}')" class="mt-4 w-full bg-slate-800 hover:bg-sky-600 text-white text-xs font-semibold py-2.5 rounded-xl transition">
-                  Ask Advice / උපදෙස් ලබාගන්න
+                  ${t("Ask Advice", "උපදෙස් ලබාගන්න")}
                 </button>
               </div>
             `).join("") : `<p class="text-xs text-slate-400">No PTIs registered in this category yet.</p>`}
@@ -562,11 +806,11 @@
       if (!guide) return `<p class="text-xs text-slate-400">Guide not found.</p>`;
       return `
         <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${guide.category}</span>
-          <h2 class="font-display text-2xl font-bold text-white uppercase mt-1">${guide.title}</h2>
-          <p class="text-xs text-slate-400 mt-1 mb-5">${guide.summary}</p>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${t(guide.categoryEn, guide.categorySi)}</span>
+          <h2 class="font-display text-2xl font-bold text-white uppercase mt-1">${t(guide.titleEn, guide.titleSi)}</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-5">${t(guide.summaryEn, guide.summarySi)}</p>
           <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 whitespace-pre-line leading-relaxed">
-            ${guide.content}
+            ${t(guide.contentEn, guide.contentSi)}
           </div>
         </div>
       `;
@@ -581,8 +825,8 @@
           <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
             <h2 class="font-display text-xl font-bold text-white uppercase mb-4">BMI Calculator</h2>
             <div class="space-y-3">
-              <input id="bmi-weight" type="number" placeholder="Weight in kg (e.g., 70)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-              <input id="bmi-height" type="number" placeholder="Height in cm (e.g., 175)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bmi-weight" type="number" placeholder="Weight in kg (බර කිලෝග්‍රෑම්)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bmi-height" type="number" placeholder="Height in cm (උස සෙන්ටිමීටර්)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               <button onclick="calcBMI()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate BMI</button>
             </div>
             <div id="bmi-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-center"></div>
@@ -594,9 +838,9 @@
           <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
             <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Navy Body Fat % Calculator</h2>
             <div class="space-y-3">
-              <input id="bf-height" type="number" placeholder="Height in cm (e.g., 175)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-              <input id="bf-neck" type="number" placeholder="Neck circumference in cm (e.g., 38)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-              <input id="bf-waist" type="number" placeholder="Waist circumference in cm (e.g., 82)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bf-height" type="number" placeholder="Height in cm (උස cm)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bf-neck" type="number" placeholder="Neck in cm (බෙල්ල cm)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="bf-waist" type="number" placeholder="Waist in cm (ඉණ cm)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               <button onclick="calcBodyFat()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Body Fat %</button>
             </div>
             <div id="bf-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-center"></div>
@@ -608,7 +852,7 @@
           <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
             <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Target Heart Rate Zones</h2>
             <div class="space-y-3">
-              <input id="hr-age" type="number" placeholder="Your Age (e.g., 28)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="hr-age" type="number" placeholder="Your Age (වයස)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
               <button onclick="calcHR()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Heart Zones</button>
             </div>
             <div id="hr-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs space-y-2"></div>
@@ -619,8 +863,8 @@
         <div class="max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
           <h2 class="font-display text-xl font-bold text-white uppercase mb-4">Daily Hydration &amp; Calorie Calculator</h2>
           <div class="space-y-3">
-            <input id="hyd-weight" type="number" placeholder="Body Weight in kg (e.g., 72)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-            <input id="hyd-mins" type="number" placeholder="Daily Training Minutes (e.g., 60)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            <input id="hyd-weight" type="number" placeholder="Body Weight in kg (බර kg)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+            <input id="hyd-mins" type="number" placeholder="Daily Training Minutes (පුහුණු මිනිත්තු)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
             <button onclick="calcHydration()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs">Calculate Intake</button>
           </div>
           <div id="hyd-result" class="mt-4 hidden bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs space-y-2"></div>
@@ -647,7 +891,7 @@
       const bf = (495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450).toFixed(1);
       const res = document.getElementById("bf-result");
       res.classList.remove("hidden");
-      res.innerHTML = `<p class="text-2xl font-bold text-amber-400">${bf}%</p><p class="text-xs text-slate-300 mt-1">Estimated Body Fat Percentage</p>`;
+      res.innerHTML = `<p class="text-2xl font-bold text-amber-400">${bf}%</p><p class="text-xs text-slate-300 mt-1">Estimated Body Fat %</p>`;
     }
 
     function calcHR() {
@@ -658,9 +902,9 @@
       res.classList.remove("hidden");
       res.innerHTML = `
         <p class="text-sm font-bold text-white">Max Heart Rate: <span class="text-amber-400">${maxHr} bpm</span></p>
-        <p class="text-emerald-400">• Fat Burn Zone (65-75%): <strong>${Math.round(maxHr*0.65)} - ${Math.round(maxHr*0.75)} bpm</strong></p>
-        <p class="text-sky-400">• Cardio Endurance Zone (75-85%): <strong>${Math.round(maxHr*0.75)} - ${Math.round(maxHr*0.85)} bpm</strong></p>
-        <p class="text-rose-400">• Peak Anaerobic Zone (85-95%): <strong>${Math.round(maxHr*0.85)} - ${Math.round(maxHr*0.95)} bpm</strong></p>
+        <p class="text-emerald-400">• Fat Burn (65-75%): <strong>${Math.round(maxHr*0.65)} - ${Math.round(maxHr*0.75)} bpm</strong></p>
+        <p class="text-sky-400">• Cardio Zone (75-85%): <strong>${Math.round(maxHr*0.75)} - ${Math.round(maxHr*0.85)} bpm</strong></p>
+        <p class="text-rose-400">• Peak Zone (85-95%): <strong>${Math.round(maxHr*0.85)} - ${Math.round(maxHr*0.95)} bpm</strong></p>
       `;
     }
 
@@ -673,8 +917,8 @@
       const res = document.getElementById("hyd-result");
       res.classList.remove("hidden");
       res.innerHTML = `
-        <p class="text-sky-400 font-bold text-sm">Daily Water Target: ${liters} Liters</p>
-        <p class="text-amber-400 font-bold text-sm">Estimated Daily Maintenance Calories: ${cals} kcal</p>
+        <p class="text-sky-400 font-bold text-sm">Daily Water: ${liters} Liters</p>
+        <p class="text-amber-400 font-bold text-sm">Daily Calories: ${cals} kcal</p>
       `;
     }
 
@@ -685,14 +929,14 @@
       if (selectedSubParam === "pdf") {
         return `
           <div class="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 class="font-display text-xl font-bold text-white uppercase mb-2">Official PFT Standards &amp; Circular PDF</h2>
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-2">${t("Official PFT Standards PDF", "නිල PFT ලකුණු සටහන් PDF ලේඛනය")}</h2>
             ${appData.pftPdf && appData.pftPdf.dataUrl ? `
               <p class="text-xs text-emerald-400 mb-3">Document: ${appData.pftPdf.fileName}</p>
               <iframe src="${appData.pftPdf.dataUrl}" class="w-full h-[500px] rounded-xl border border-slate-700 bg-white"></iframe>
               <a href="${appData.pftPdf.dataUrl}" download="${appData.pftPdf.fileName}" class="mt-4 inline-block bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl">Download PDF</a>
             ` : `
               <div class="bg-slate-950 border border-slate-800 rounded-xl p-6 text-center">
-                <p class="text-xs text-slate-400">No PFT PDF has been uploaded yet. The administrator can upload the official PFT PDF via the Admin Panel.</p>
+                <p class="text-xs text-slate-400">${t("No PFT PDF uploaded yet.", "තවමත් PFT PDF ලේඛනයක් ඇතුළත් කර නොමැත.")}</p>
               </div>
             `}
           </div>
@@ -702,27 +946,27 @@
       return `
         <div class="max-w-3xl mx-auto space-y-6">
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">PFT Auto-Scorer &amp; Marksheet Generator</h2>
-            <p class="text-xs text-slate-400 mb-4">Enter candidate details and raw test scores to generate an official marksheet</p>
+            <h2 class="font-display text-xl font-bold text-white uppercase mb-1">${t("PFT Auto-Scorer & Marksheet Generator", "PFT ස්වයංක්‍රීය ලකුණු ගණනය සහ Marksheet")}</h2>
+            <p class="text-xs text-slate-400 mb-4">${t("Enter candidate details and test scores", "සාමාජිකයාගේ තොරතුරු සහ දක්ෂතා ඇතුළත් කරන්න")}</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <input id="pft-svc" type="text" placeholder="Service No (e.g., 40218)" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-              <input id="pft-rank-name" type="text" placeholder="Rank &amp; Name" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
-              <input id="pft-unit" type="text" placeholder="Base / Unit / Squadron" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="pft-svc" type="text" placeholder="Service No (සේවා අංකය)" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="pft-rank-name" type="text" placeholder="Rank & Name (නිලය සහ නම)" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              <input id="pft-unit" type="text" placeholder="Base / Unit (කඳවුර)" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
               ${appData.pftEvents.map(ev => `
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
-                  <label class="block text-xs font-semibold text-slate-200 mb-1">${ev.name}</label>
+                  <label class="block text-xs font-semibold text-slate-200 mb-1">${t(ev.nameEn, ev.nameSi)}</label>
                   <p class="text-[10px] text-slate-400 mb-2">Full (${ev.maxMarks} pts): ${ev.targetFull} | Min Pass: ${ev.minPass}</p>
-                  <input id="input-${ev.id}" type="number" step="any" placeholder="Enter performance value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                  <input id="input-${ev.id}" type="number" step="any" placeholder="Enter value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
                 </div>
               `).join("")}
             </div>
 
             <button onclick="generatePftMarksheet()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-xs uppercase tracking-wider transition">
-              Calculate Marks &amp; Generate Marksheet
+              ${t("Calculate Marks & Generate Marksheet", "ලකුණු ගණනය කර Marksheet ලබාගන්න")}
             </button>
           </div>
 
@@ -749,27 +993,20 @@
         if (!isNaN(val)) {
           if (ev.type === "higher_better") {
             if (val >= ev.targetFull) score = ev.maxMarks;
-            else if (val >= ev.minPass) {
-              score = Math.round(50 + ((val - ev.minPass) / (ev.targetFull - ev.minPass)) * (ev.maxMarks - 50));
-            } else {
-              score = Math.max(0, Math.round((val / ev.minPass) * 49));
-            }
+            else if (val >= ev.minPass) score = Math.round(50 + ((val - ev.minPass) / (ev.targetFull - ev.minPass)) * (ev.maxMarks - 50));
+            else score = Math.max(0, Math.round((val / ev.minPass) * 49));
             passed = val >= ev.minPass;
           } else {
-            // lower_better (e.g. run time in seconds)
             if (val <= ev.targetFull) score = ev.maxMarks;
-            else if (val <= ev.minPass) {
-              score = Math.round(50 + ((ev.minPass - val) / (ev.minPass - ev.targetFull)) * (ev.maxMarks - 50));
-            } else {
-              score = Math.max(0, Math.round((ev.minPass / val) * 40));
-            }
+            else if (val <= ev.minPass) score = Math.round(50 + ((ev.minPass - val) / (ev.minPass - ev.targetFull)) * (ev.maxMarks - 50));
+            else score = Math.max(0, Math.round((ev.minPass / val) * 40));
             passed = val <= ev.minPass;
           }
         }
         if (!passed) allPassed = false;
         totalObtained += score;
         totalPossible += ev.maxMarks;
-        rows.push({ name: ev.name, raw: isNaN(val) ? "-" : val, score, max: ev.maxMarks, passed });
+        rows.push({ name: t(ev.nameEn, ev.nameSi), raw: isNaN(val) ? "-" : val, score, max: ev.maxMarks, passed });
       });
 
       const pct = totalPossible ? ((totalObtained / totalPossible) * 100).toFixed(1) : 0;
@@ -782,12 +1019,12 @@
         <div id="printable-marksheet" class="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-300">
           <div class="border-b-2 border-slate-900 pb-4 mb-4 flex items-center justify-between">
             <div>
-              <h3 class="font-display text-xl font-bold uppercase tracking-wide text-slate-900">${appData.siteTitle}</h3>
+              <h3 class="font-display text-xl font-bold uppercase text-slate-900">${appData.siteTitle}</h3>
               <p class="text-xs font-semibold text-slate-600 uppercase">Official Physical Fitness Test (PFT) Marksheet</p>
             </div>
             <div class="text-right text-xs text-slate-600">
               <p><strong>Date:</strong> ${today}</p>
-              <p><strong>Status:</strong> <span class="${allPassed ? 'text-emerald-700' : 'text-red-700'} font-bold">${grade}</span></p>
+              <p><strong>Result:</strong> <span class="${allPassed ? 'text-emerald-700' : 'text-red-700'} font-bold">${grade}</span></p>
             </div>
           </div>
 
@@ -803,7 +1040,7 @@
                 <th class="p-2.5 text-left">Test Event</th>
                 <th class="p-2.5 text-center">Performance</th>
                 <th class="p-2.5 text-center">Marks</th>
-                <th class="p-2.5 text-center">Result</th>
+                <th class="p-2.5 text-center">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -830,7 +1067,7 @@
           </div>
 
           <div class="mt-6 pt-4 border-t border-slate-300 flex items-center justify-between text-[11px] text-slate-500">
-            <span>Verified by: ${appData.creator.name}</span>
+            <span>System Creator: ${appData.creator.name}</span>
             <button onclick="window.print()" class="no-print bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-xs">
               Print / Save PDF Marksheet
             </button>
@@ -840,40 +1077,49 @@
     }
 
     // =========================================================================
-    // 7. SEPARATE URL ADMIN PANEL (?admin)
+    // 7. ADMIN PANEL (APP ICON, PERMANENT PASSWORD, TOPICS, SUB-TOPICS, FIREBASE)
     // =========================================================================
     let activeAdminTab = "general";
 
     function renderAdminPanel() {
+      const now = Date.now();
       if (!isAdminAuthenticated) {
+        const remainingLock = Math.max(0, Math.ceil((lockoutUntil - now) / 1000));
         return `
-          <div class="max-w-sm mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 mt-8 shadow-2xl">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Restricted Access</span>
+          <div class="max-w-sm mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 mt-6 shadow-2xl">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Protected Security Gate</span>
             <h2 class="font-display text-2xl font-bold text-white uppercase mt-1 mb-4">Admin Panel Login</h2>
-            <input id="admin-pass-input" type="password" placeholder="Enter Admin Password" onkeydown="if(event.key==='Enter') verifyAdminLogin()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white mb-3" />
-            <button onclick="verifyAdminLogin()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
-              Unlock Admin Panel
-            </button>
+            ${remainingLock > 0 ? `
+              <div class="bg-rose-950/60 border border-rose-500/40 rounded-xl p-3.5 text-xs text-rose-300 mb-3">
+                Too many incorrect attempts. Security locked for <strong>${remainingLock}s</strong>.
+              </div>
+              <button onclick="refreshUI()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-xs">Check Again</button>
+            ` : `
+              <input id="admin-pass-input" type="password" placeholder="Enter Admin Password" onkeydown="if(event.key==='Enter') verifyAdminLogin()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white mb-3" />
+              <button onclick="verifyAdminLogin()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+                Unlock Admin Panel
+              </button>
+            `}
           </div>
         `;
       }
 
       const tabs = [
-        { id: "general", label: "General & Photos" },
+        { id: "general", label: "App Icon & Photos" },
+        { id: "topics", label: "Topics & Sub-Topics" },
         { id: "ptis", label: "PTIs (Diploma/MIC)" },
-        { id: "guides", label: "Training Guides" },
         { id: "pft", label: "PFT Events & PDF" },
-        { id: "firebase", label: "Firebase & Security" }
+        { id: "firebase", label: "Password & Firebase" }
       ];
 
       return `
         <div class="max-w-4xl mx-auto">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div>
-              <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Administrator Mode</span>
-              <h2 class="font-display text-2xl font-bold text-white uppercase">System Control Panel</h2>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">● Secure Admin Session Active</span>
+              <h2 class="font-display text-2xl font-bold text-white uppercase">System Admin Panel</h2>
             </div>
-            <button onclick="isAdminAuthenticated=false; goHome();" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3.5 py-2 rounded-xl">Exit Admin</button>
+            <button onclick="isAdminAuthenticated=false; goHome();" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3.5 py-2 rounded-xl">Lock &amp; Exit</button>
           </div>
 
           <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
@@ -884,7 +1130,7 @@
             `).join("")}
           </div>
 
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6">
             ${renderAdminTabContent()}
           </div>
         </div>
@@ -892,42 +1138,139 @@
     }
 
     function verifyAdminLogin() {
-      const entered = document.getElementById("admin-pass-input").value;
-      if (entered === appData.adminPassword) {
+      if (Date.now() < lockoutUntil) return refreshUI();
+      const entered = document.getElementById("admin-pass-input").value.trim();
+      if (entered === permanentAdminPassword) {
         isAdminAuthenticated = true;
+        failedAttempts = 0;
+        resetAdminIdleTimer();
         refreshUI();
       } else {
-        alert("Incorrect Admin Password!");
+        failedAttempts++;
+        if (failedAttempts >= 3) {
+          lockoutUntil = Date.now() + 60 * 1000;
+          failedAttempts = 0;
+        } else {
+          alert(`Incorrect Password! (${3 - failedAttempts} attempts remaining before 60s lock)`);
+        }
+        refreshUI();
       }
     }
 
     function renderAdminTabContent() {
       if (activeAdminTab === "general") {
         return `
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs text-slate-300 mb-1">System Title</label>
-              <input id="adm-site-title" type="text" value="${appData.siteTitle}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+          <div class="space-y-5">
+            <!-- APP ICON UPLOAD CARD -->
+            <div class="bg-slate-950 border border-sky-500/40 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
+              <img src="${appData.appIcon || DEFAULT_APP_ICON}" alt="App Icon" class="w-16 h-16 rounded-2xl object-cover border-2 border-sky-500 bg-slate-900 shrink-0" />
+              <div class="flex-1">
+                <h3 class="text-xs font-bold uppercase text-sky-400">App Icon &amp; Header Logo (ඕනෑම වෙලාවක වෙනස් කළ හැක)</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5 mb-2">Upload a square image to set as the Phone Home Screen App Icon &amp; Header Logo.</p>
+                <input type="file" accept="image/*" onchange="handleAppIconUpload(event)" class="text-xs text-slate-300" />
+              </div>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">System Title (English)</label>
+                <input id="adm-site-title" type="text" value="${appData.siteTitle}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">පද්ධතියේ නම (සිංහල)</label>
+                <input id="adm-site-title-si" type="text" value="${appData.siteTitleSi || ''}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
+              </div>
+            </div>
+
             <div>
               <label class="block text-xs text-slate-300 mb-1">Creator Name &amp; Service No</label>
               <input id="adm-creator-name" type="text" value="${appData.creator.name}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white" />
             </div>
+
             <div>
               <label class="block text-xs text-slate-300 mb-1">Qualifications (One per line)</label>
               <textarea id="adm-creator-quals" rows="4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">${appData.creator.qualifications.join("\n")}</textarea>
             </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                <label class="block text-xs text-slate-300 mb-2">Upload Creator Photo</label>
-                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'creatorPhoto')" class="text-xs text-slate-400" />
+              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl flex items-center gap-3">
+                <img src="${appData.creator.creatorPhoto || DEFAULT_AVATAR}" class="w-12 h-12 rounded-xl object-cover border border-slate-700" />
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Upload Creator Photo</label>
+                  <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'creatorPhoto')" class="text-xs text-slate-400" />
+                </div>
               </div>
-              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl">
-                <label class="block text-xs text-slate-300 mb-2">Upload Profile Photo</label>
-                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'profilePhoto')" class="text-xs text-slate-400" />
+              <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-xl flex items-center gap-3">
+                <img src="${appData.creator.profilePhoto || DEFAULT_AVATAR}" class="w-12 h-12 rounded-full object-cover border border-slate-700" />
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Upload Profile Photo</label>
+                  <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'profilePhoto')" class="text-xs text-slate-400" />
+                </div>
               </div>
             </div>
+
             <button onclick="saveGeneralSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl">Save General Settings</button>
+          </div>
+        `;
+      }
+
+      if (activeAdminTab === "topics") {
+        return `
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-sm font-bold text-sky-400 uppercase mb-3">1. Edit Main Topics (ප්‍රධාන මාතෘකා වෙනස් කරන්න)</h3>
+              <div class="space-y-3">
+                ${appData.mainTopics.map((m, idx) => `
+                  <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input id="mt-en-${idx}" type="text" value="${m.titleEn}" placeholder="English Title" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                      <input id="mt-si-${idx}" type="text" value="${m.titleSi}" placeholder="සිංහල මාතෘකාව" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input id="mt-den-${idx}" type="text" value="${m.descEn}" placeholder="English Description" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300" />
+                      <input id="mt-dsi-${idx}" type="text" value="${m.descSi}" placeholder="සිංහල විස්තරය" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300" />
+                    </div>
+                    <button onclick="saveMainTopicEdit(${idx})" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg">Update Topic</button>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-5">
+              <h3 class="text-sm font-bold text-emerald-400 uppercase mb-3">2. Edit / Add Sub-Topics &amp; Training Guides (අනුමාතෘකා වෙනස් කරන්න / එකතු කරන්න)</h3>
+              <div class="space-y-3 mb-5">
+                ${appData.trainingGuides.map((g, idx) => `
+                  <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[11px] font-bold text-emerald-400 uppercase">Sub-Topic #${idx + 1}</span>
+                      <button onclick="appData.trainingGuides.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs px-2.5 py-1 rounded-lg">Delete</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input id="sg-caten-${idx}" type="text" value="${g.categoryEn}" placeholder="Category (EN)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
+                      <input id="sg-catsi-${idx}" type="text" value="${g.categorySi}" placeholder="කාණ්ඩය (සිංහල)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
+                      <input id="sg-ten-${idx}" type="text" value="${g.titleEn}" placeholder="Sub-Topic Title (EN)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
+                      <input id="sg-tsi-${idx}" type="text" value="${g.titleSi}" placeholder="අනුමාතෘකාව (සිංහල)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
+                    </div>
+                    <textarea id="sg-cen-${idx}" rows="2" placeholder="English Content" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">${g.contentEn}</textarea>
+                    <textarea id="sg-csi-${idx}" rows="2" placeholder="සිංහල විස්තරය" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">${g.contentSi}</textarea>
+                    <button onclick="saveSubTopicEdit(${idx})" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg">Save Sub-Topic Changes</button>
+                  </div>
+                `).join("")}
+              </div>
+
+              <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-4 space-y-2.5">
+                <h4 class="text-xs font-bold uppercase text-emerald-400">+ Add New Sub-Topic / Guide</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input id="new-sg-caten" type="text" placeholder="Category EN (e.g., Agility)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                  <input id="new-sg-catsi" type="text" placeholder="කාණ්ඩය සිංහල (උදා: වේගවත් පුහුණුව)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                  <input id="new-sg-ten" type="text" placeholder="Sub-Topic Title (EN)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                  <input id="new-sg-tsi" type="text" placeholder="අනුමාතෘකාව (සිංහල)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                </div>
+                <textarea id="new-sg-cen" rows="2" placeholder="Detailed Instructions (English)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></textarea>
+                <textarea id="new-sg-csi" rows="2" placeholder="සවිස්තරාත්මක උපදෙස් (සිංහල)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></textarea>
+                <button onclick="addNewSubTopic()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ Add Sub-Topic</button>
+              </div>
+            </div>
           </div>
         `;
       }
@@ -950,32 +1293,6 @@
         `;
       }
 
-      if (activeAdminTab === "guides") {
-        return `
-          <div class="space-y-5">
-            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-              <h3 class="text-xs font-bold uppercase text-emerald-400">Add New Training Guide</h3>
-              <input id="adm-g-cat" type="text" placeholder="Category (e.g., Fat Burn, Cardio, Endurance, Agility)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
-              <input id="adm-g-title" type="text" placeholder="Guide Title" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
-              <input id="adm-g-sum" type="text" placeholder="Short Summary" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
-              <textarea id="adm-g-body" rows="3" placeholder="Detailed workout steps..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></textarea>
-              <button onclick="addNewGuide()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">+ Add Guide</button>
-            </div>
-            <div class="space-y-2">
-              ${appData.trainingGuides.map((g, idx) => `
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
-                  <div>
-                    <span class="text-[10px] text-emerald-400 font-bold uppercase">${g.category}</span>
-                    <p class="text-xs font-bold text-white">${g.title}</p>
-                  </div>
-                  <button onclick="appData.trainingGuides.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs px-3 py-1.5 rounded-lg">Delete</button>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        `;
-      }
-
       if (activeAdminTab === "pft") {
         return `
           <div class="space-y-5">
@@ -987,7 +1304,10 @@
 
             <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
               <h3 class="text-xs font-bold uppercase text-indigo-400">Add Custom PFT Event &amp; Scoring</h3>
-              <input id="adm-ev-name" type="text" placeholder="Event Name (e.g., Shuttle Run 4x10m)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input id="adm-ev-name-en" type="text" placeholder="Event Name EN (e.g., Shuttle Run)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+                <input id="adm-ev-name-si" type="text" placeholder="ඉසව්වේ නම සිංහල" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+              </div>
               <select id="adm-ev-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
                 <option value="higher_better">Higher Number = Better (Push-ups, Sit-ups, Pull-ups)</option>
                 <option value="lower_better">Lower Time = Better (Running / Sprint Seconds)</option>
@@ -1004,8 +1324,8 @@
               ${appData.pftEvents.map((ev, idx) => `
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs">
                   <div>
-                    <strong class="text-white">${ev.name}</strong>
-                    <span class="text-slate-400 ml-2">(Full: ${ev.targetFull} | Pass: ${ev.minPass} | Max: ${ev.maxMarks})</span>
+                    <strong class="text-white">${ev.nameEn} / ${ev.nameSi}</strong>
+                    <span class="text-slate-400 ml-2">(Full: ${ev.targetFull} | Pass: ${ev.minPass})</span>
                   </div>
                   <button onclick="appData.pftEvents.splice(${idx}, 1); saveData();" class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-2.5 py-1 rounded-lg">Delete</button>
                 </div>
@@ -1017,50 +1337,90 @@
 
       return `
         <div class="space-y-5">
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-            <h3 class="text-xs font-bold uppercase text-amber-400">Change Admin Password</h3>
-            <input id="adm-new-pass" type="text" placeholder="Enter New Admin Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
-            <button onclick="changeAdminPassword()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">Update Password</button>
+          <div class="bg-slate-950 border border-amber-500/40 rounded-xl p-4 space-y-3">
+            <h3 class="text-xs font-bold uppercase text-amber-400">Permanent Admin Password Change (ස්ථිර මුරපදය වෙනස් කිරීම)</h3>
+            <p class="text-[11px] text-slate-400">Once changed and saved, this password is permanently locked in Local &amp; Firebase storage and will never reset on page reload.</p>
+            <input id="adm-curr-pass" type="password" placeholder="Current Password (වත්මන් මුරපදය)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+            <input id="adm-new-pass" type="password" placeholder="New Permanent Password (නව මුරපදය)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+            <input id="adm-conf-pass" type="password" placeholder="Confirm New Password (නව මුරපදය තහවුරු කරන්න)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+            <button onclick="changeAdminPassword()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-4 py-2.5 rounded-lg">Save Permanent Password</button>
           </div>
 
           <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
             <h3 class="text-xs font-bold uppercase text-sky-400">Connect Firebase Realtime Database (Live Sync)</h3>
-            <p class="text-[11px] text-slate-400">Paste your Firebase Web App config JSON object below to sync all updates across devices.</p>
-            <textarea id="adm-fb-config" rows="5" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"..."}' class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white">${appData.firebaseConfig ? JSON.stringify(appData.firebaseConfig, null, 2) : ""}</textarea>
+            <p class="text-[11px] text-slate-400">Paste your Firebase Web App config JSON object below so every change and password update syncs live across all devices.</p>
+            <textarea id="adm-fb-config" rows="5" placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"..."}' class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-white">${savedFirebaseConfig ? JSON.stringify(savedFirebaseConfig, null, 2) : ""}</textarea>
             <button onclick="saveFirebaseConfig()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2 rounded-lg">Connect &amp; Sync Firebase</button>
           </div>
         </div>
       `;
     }
 
+    function handleAppIconUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      compressImageFile(file, 256, (dataUrl) => {
+        appData.appIcon = dataUrl;
+        saveData();
+        alert("App Icon & Header Logo updated permanently!");
+      });
+    }
+
     function handlePhotoUpload(event, key) {
       const file = event.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        appData.creator[key] = e.target.result;
+      compressImageFile(file, 300, (dataUrl) => {
+        appData.creator[key] = dataUrl;
         saveData();
         alert("Photo updated!");
-      };
-      reader.readAsDataURL(file);
+      });
+    }
+
+    function saveMainTopicEdit(idx) {
+      appData.mainTopics[idx].titleEn = document.getElementById(`mt-en-${idx}`).value.trim();
+      appData.mainTopics[idx].titleSi = document.getElementById(`mt-si-${idx}`).value.trim();
+      appData.mainTopics[idx].descEn = document.getElementById(`mt-den-${idx}`).value.trim();
+      appData.mainTopics[idx].descSi = document.getElementById(`mt-dsi-${idx}`).value.trim();
+      saveData();
+      alert("Main Topic Updated!");
+    }
+
+    function saveSubTopicEdit(idx) {
+      appData.trainingGuides[idx].categoryEn = document.getElementById(`sg-caten-${idx}`).value.trim();
+      appData.trainingGuides[idx].categorySi = document.getElementById(`sg-catsi-${idx}`).value.trim();
+      appData.trainingGuides[idx].titleEn = document.getElementById(`sg-ten-${idx}`).value.trim();
+      appData.trainingGuides[idx].titleSi = document.getElementById(`sg-tsi-${idx}`).value.trim();
+      appData.trainingGuides[idx].contentEn = document.getElementById(`sg-cen-${idx}`).value.trim();
+      appData.trainingGuides[idx].contentSi = document.getElementById(`sg-csi-${idx}`).value.trim();
+      saveData();
+      alert("Sub-Topic Updated!");
+    }
+
+    function addNewSubTopic() {
+      const categoryEn = document.getElementById("new-sg-caten").value.trim() || "Training";
+      const categorySi = document.getElementById("new-sg-catsi").value.trim() || categoryEn;
+      const titleEn = document.getElementById("new-sg-ten").value.trim();
+      const titleSi = document.getElementById("new-sg-tsi").value.trim() || titleEn;
+      const contentEn = document.getElementById("new-sg-cen").value.trim();
+      const contentSi = document.getElementById("new-sg-csi").value.trim() || contentEn;
+      if (!titleEn || !contentEn) return alert("Please enter Sub-Topic Title and Content.");
+      appData.trainingGuides.push({
+        id: "guide-" + Date.now(),
+        categoryEn, categorySi, titleEn, titleSi,
+        summaryEn: titleEn, summarySi: titleSi,
+        contentEn, contentSi
+      });
+      saveData();
+      alert("New Sub-Topic Added!");
     }
 
     function saveGeneralSettings() {
       appData.siteTitle = document.getElementById("adm-site-title").value.trim() || "Physical Training and Fitness System";
+      appData.siteTitleSi = document.getElementById("adm-site-title-si").value.trim() || "ශාරීරික පුහුණු සහ යෝග්‍යතා පද්ධතිය";
       appData.creator.name = document.getElementById("adm-creator-name").value.trim() || "40218 Sgt Suranga";
       appData.creator.qualifications = document.getElementById("adm-creator-quals").value.split("\n").map(s => s.trim()).filter(Boolean);
       saveData();
       alert("General settings saved!");
-    }
-
-    function addNewGuide() {
-      const category = document.getElementById("adm-g-cat").value.trim();
-      const title = document.getElementById("adm-g-title").value.trim();
-      const summary = document.getElementById("adm-g-sum").value.trim();
-      const content = document.getElementById("adm-g-body").value.trim();
-      if (!category || !title || !content) return alert("Please fill Category, Title, and Content.");
-      appData.trainingGuides.push({ id: "guide-" + Date.now(), category, title, summary, content });
-      saveData();
     }
 
     function handlePdfUpload(event) {
@@ -1076,31 +1436,46 @@
     }
 
     function addPftEvent() {
-      const name = document.getElementById("adm-ev-name").value.trim();
+      const nameEn = document.getElementById("adm-ev-name-en").value.trim();
+      const nameSi = document.getElementById("adm-ev-name-si").value.trim() || nameEn;
       const type = document.getElementById("adm-ev-type").value;
       const targetFull = parseFloat(document.getElementById("adm-ev-full").value);
       const minPass = parseFloat(document.getElementById("adm-ev-pass").value);
       const maxMarks = parseFloat(document.getElementById("adm-ev-max").value) || 100;
-      if (!name || isNaN(targetFull) || isNaN(minPass)) return alert("Please fill all event values.");
-      appData.pftEvents.push({ id: "ev-" + Date.now(), name, type, targetFull, minPass, maxMarks });
+      if (!nameEn || isNaN(targetFull) || isNaN(minPass)) return alert("Please fill all event values.");
+      appData.pftEvents.push({ id: "ev-" + Date.now(), nameEn, nameSi, type, targetFull, minPass, maxMarks });
       saveData();
     }
 
     function changeAdminPassword() {
+      const curr = document.getElementById("adm-curr-pass").value.trim();
       const np = document.getElementById("adm-new-pass").value.trim();
-      if (!np) return alert("Enter a valid password.");
-      appData.adminPassword = np;
-      saveData();
-      alert("Admin password changed successfully!");
+      const conf = document.getElementById("adm-conf-pass").value.trim();
+
+      if (curr !== permanentAdminPassword) return alert("Current password is incorrect!");
+      if (np.length < 4) return alert("New password must be at least 4 characters.");
+      if (np !== conf) return alert("New password and Confirm password do not match!");
+
+      permanentAdminPassword = np;
+      localStorage.setItem(PASS_LOCK_KEY, permanentAdminPassword);
+      if (passRef) {
+        passRef.set(permanentAdminPassword).catch(e => console.error("Password Firebase save error:", e));
+      }
+      document.getElementById("adm-curr-pass").value = "";
+      document.getElementById("adm-new-pass").value = "";
+      document.getElementById("adm-conf-pass").value = "";
+      alert("Permanent Admin Password saved successfully! It will never reset.");
     }
 
     function saveFirebaseConfig() {
       try {
         const raw = document.getElementById("adm-fb-config").value.trim();
-        appData.firebaseConfig = raw ? JSON.parse(raw) : null;
-        saveData();
+        savedFirebaseConfig = raw ? JSON.parse(raw) : null;
+        localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(savedFirebaseConfig));
         initFirebaseIfConfigured();
-        alert("Firebase configuration saved and connected!");
+        if (dbRef) dbRef.set(appData);
+        if (passRef) passRef.set(permanentAdminPassword);
+        alert("Firebase connected and synced permanently!");
       } catch (e) {
         alert("Invalid JSON format. Please paste the exact Firebase config JSON.");
       }
@@ -1110,6 +1485,9 @@
     // MODALS (CREATOR & CONSULTATION)
     // =========================================================================
     function openCreatorModal() {
+      const ui = UI_TEXT[currentLang];
+      document.getElementById("modal-creator-badge").textContent = ui.creatorBtn;
+      document.getElementById("modal-qual-heading").textContent = ui.coursesQual;
       document.getElementById("modal-creator-photo").src = appData.creator.creatorPhoto || DEFAULT_AVATAR;
       document.getElementById("modal-profile-photo").src = appData.creator.profilePhoto || DEFAULT_AVATAR;
       document.getElementById("modal-creator-name").textContent = appData.creator.name;
@@ -1125,6 +1503,7 @@
     function openConsultModal(ptiId) {
       activeConsultPti = appData.ptis.find(p => p.id === ptiId);
       if (!activeConsultPti) return;
+      document.getElementById("consult-modal-title").textContent = UI_TEXT[currentLang].askAdvice;
       document.getElementById("consult-pti-target").textContent = `Instructor: ${activeConsultPti.name} (${activeConsultPti.category})`;
       document.getElementById("consult-modal").classList.remove("hidden");
     }
