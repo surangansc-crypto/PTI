@@ -85,12 +85,21 @@
   </div>
 
   <!-- MAIN CONTENT CONTAINER -->
-  <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto px-4 py-5"></main>
+  <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto px-4 py-4"></main>
 
   <!-- FOOTER -->
   <footer class="border-t border-slate-800/80 py-3.5 text-center text-xs text-slate-500">
     <span id="footer-title">Physical Training and Fitness System</span>
   </footer>
+
+  <!-- LIGHTBOX / GALLERY PHOTO VIEWER MODAL -->
+  <div id="photo-viewer-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-4 shadow-2xl relative">
+      <button onclick="document.getElementById('photo-viewer-modal').classList.add('hidden')" class="absolute top-3 right-3 text-slate-300 hover:text-white bg-slate-800 rounded-lg px-2.5 py-1 text-xs">✕</button>
+      <img id="pv-img" src="" alt="Gallery Photo" class="w-full max-h-[70vh] object-contain rounded-xl bg-slate-950" />
+      <p id="pv-caption" class="text-xs font-bold text-white text-center mt-3"></p>
+    </div>
+  </div>
 
   <!-- CREATOR MODAL -->
   <div id="creator-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeCreatorModal()">
@@ -358,7 +367,7 @@
       return { ageCats, events, matrix };
     }
 
-    const STORAGE_KEY = "slaf_pt_fitness_system_v6";
+    const STORAGE_KEY = "slaf_pt_fitness_system_v7";
     const PASS_LOCK_KEY = "slaf_pt_permanent_admin_pass";
     const FB_CONFIG_KEY = "slaf_pt_firebase_config";
     const DEFAULT_PFT = buildDefaultPftMatrix();
@@ -429,12 +438,11 @@
         { id: "vision", type: "system_vision", titleEn: "Vision & Mission", titleSi: "දැක්ම සහ මෙහෙවර", color: "from-cyan-500 to-teal-600" },
         { id: "org", type: "system_org", titleEn: "Organization Structure", titleSi: "ආයතනික ව්‍යුහය", color: "from-blue-600 to-indigo-700" },
         { id: "pti", type: "system_pti", titleEn: "26 Camps & Sports PTIs", titleSi: "කඳවුරු 26 සහ PTI වරුන්", color: "from-sky-500 to-blue-600" },
-        { id: "rank_summary", type: "system_ranks", titleEn: "Rank-Wise PTI Count", titleSi: "නිලයන් අනුව PTI ගණන", color: "from-violet-500 to-purple-600" },
-        { id: "gallery", type: "system_gallery", titleEn: "PTI Photo Gallery", titleSi: "PTI ඡායාරූප ගැලරිය", color: "from-pink-500 to-rose-600" },
         { id: "guides", type: "system_guides", titleEn: "Training Modules", titleSi: "පුහුණු ක්‍රමවේද", color: "from-emerald-500 to-teal-600" },
         { id: "calculators", type: "system_calculators", titleEn: "Fitness Calculators", titleSi: "ශාරීරික මිනුම් ගණනය", color: "from-amber-500 to-orange-600" },
         { id: "pft", type: "system_pft", titleEn: "PT Test (PFT) System", titleSi: "PT පරීක්ෂණය (PFT)", color: "from-indigo-500 to-purple-600" },
-        { id: "leadership", type: "system_leadership", titleEn: "Board & Direct Ask", titleSi: "අධ්‍යක්ෂ මණ්ඩලය / විමසීම්", color: "from-rose-500 to-red-600" }
+        { id: "leadership", type: "system_leadership", titleEn: "Board & Direct Ask", titleSi: "අධ්‍යක්ෂ මණ්ඩලය / විමසීම්", color: "from-rose-500 to-red-600" },
+        { id: "rank_summary", type: "system_ranks", titleEn: "Rank-Wise Details", titleSi: "නිලයන් අනුව විස්තර", color: "from-violet-500 to-purple-600" }
       ],
       ptis: [
         {
@@ -606,6 +614,12 @@
       refreshUI();
     }
 
+    function openPhotoViewer(src, caption) {
+      document.getElementById("pv-img").src = src;
+      document.getElementById("pv-caption").textContent = caption;
+      document.getElementById("photo-viewer-modal").classList.remove("hidden");
+    }
+
     function t(enVal, siVal) {
       return currentLang === "si" && siVal ? siVal : enVal;
     }
@@ -666,7 +680,9 @@
       return html;
     }
 
-    // 1. COMPACT NON-SCROLLING HOME SCREEN
+    // =========================================================================
+    // 1. HOME SCREEN: TOP BUTTONS + TOTAL ALL-CAMPS PTI COUNT + BOTTOM GALLERY
+    // =========================================================================
     function renderHome() {
       const icons = {
         vision: `<path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>`,
@@ -680,27 +696,91 @@
         leadership: `<path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>`
       };
 
+      const totalPtis = appData.ptis.length;
+      const dipCount = appData.ptis.filter(p => p.category === "Diploma").length;
+      const micCount = appData.ptis.filter(p => p.category === "MIC").length;
+
       return `
-        <div class="max-w-3xl mx-auto">
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+        <div class="max-w-3xl mx-auto space-y-4">
+          <!-- 1. COMPACT BUTTONS GRID (Vision & Mission, Organization Structure + All Topics) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             ${appData.mainTopics.map(topic => `
-              <button onclick="openMainTopic('${topic.id}')" class="group bg-slate-900/95 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/70 rounded-xl p-3 sm:p-4 transition-all shadow flex items-center gap-2.5 sm:gap-3 text-left active:scale-[0.98]">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${topic.color || 'from-sky-500 to-blue-600'} flex items-center justify-center shrink-0 shadow">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${icons[topic.id] || icons.guides}</svg>
+              <button onclick="openMainTopic('${topic.id}')" class="group bg-slate-900/95 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/70 rounded-xl p-2.5 sm:p-3 transition-all shadow flex items-center gap-2.5 text-left active:scale-[0.98]">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br ${topic.color || 'from-sky-500 to-blue-600'} flex items-center justify-center shrink-0 shadow">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${icons[topic.id] || icons.guides}</svg>
                 </div>
                 <div class="min-w-0">
-                  <h3 class="font-display text-xs sm:text-sm font-bold text-white uppercase leading-snug group-hover:text-sky-400 transition-colors line-clamp-2">
+                  <h3 class="font-display text-[11px] sm:text-xs font-bold text-white uppercase leading-tight group-hover:text-sky-400 transition-colors line-clamp-2">
                     ${t(topic.titleEn, topic.titleSi)}
                   </h3>
                 </div>
               </button>
             `).join("")}
           </div>
+
+          <!-- 2. LIVE TOTAL PTI STRENGTH ACROSS ALL 26 CAMPS (DIRECTLY ON HOME SCREEN) -->
+          <div onclick="openMainTopic('rank_summary')" class="bg-slate-900/90 hover:bg-slate-900 border border-sky-500/30 rounded-2xl p-3.5 cursor-pointer transition shadow-lg">
+            <div class="flex items-center justify-between mb-2.5">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">${t(`All ${appData.camps.length} Camps Total PTI Strength`, `කඳවුරු ${appData.camps.length} සමස්ත PTI සංඛ්‍යාව`)}</span>
+                <h3 class="text-xs sm:text-sm font-bold text-white">${t("Total PTIs & Rank Breakdown", "මුළු PTI ගණන සහ නිලයන් අනුව එකතුව")}</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="bg-sky-500/20 border border-sky-500/40 px-3 py-1 rounded-lg text-center">
+                  <span class="block text-[9px] text-sky-300 uppercase font-bold">Total</span>
+                  <span class="text-sm sm:text-base font-extrabold text-white">${totalPtis}</span>
+                </div>
+                <div class="bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-center">
+                  <span class="block text-[9px] text-emerald-300 uppercase">Dip / MIC</span>
+                  <span class="text-xs font-bold text-emerald-400">${dipCount} / ${micCount}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Compact Rank Pills (MWO to AC) -->
+            <div class="grid grid-cols-7 gap-1 text-center">
+              ${RANKS_LIST.map(rk => {
+                const cnt = appData.ptis.filter(p => (p.rank || "").toLowerCase() === rk.toLowerCase()).length;
+                return `
+                  <div class="bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-1">
+                    <span class="block text-[10px] font-bold text-slate-400">${rk}</span>
+                    <span class="text-xs font-extrabold ${cnt > 0 ? 'text-amber-400' : 'text-slate-600'}">${cnt}</span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+
+          <!-- 3. PTI PHOTO GALLERY DIRECTLY AT THE BOTTOM OF HOME SCREEN -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                <h3 class="font-display text-xs sm:text-sm font-bold text-white uppercase tracking-wide">${t("PTI Photo Gallery", "PTI ඡායාරූප ගැලරිය")}</h3>
+              </div>
+              <button onclick="openMainTopic('gallery')" class="text-[11px] font-semibold text-pink-400 hover:text-pink-300">
+                ${t("View All →", "සියල්ල බලන්න →")}
+              </button>
+            </div>
+            ${appData.ptiGallery.length ? `
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                ${appData.ptiGallery.slice(0, 6).map(item => `
+                  <div onclick="openPhotoViewer('${item.photo}', '${t(item.titleEn, item.titleSi).replace(/'/g, "\\'")}')" class="group relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 cursor-pointer">
+                    <img src="${item.photo}" alt="${item.titleEn}" class="w-full h-28 sm:h-32 object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-2">
+                      <p class="text-[10px] sm:text-[11px] font-semibold text-white truncate">${t(item.titleEn, item.titleSi)}</p>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            ` : `
+              <p class="text-xs text-slate-500 text-center py-4">${t("Upload photos from Admin Panel → PTI Gallery", "Admin Panel → PTI Gallery හරහා ඡායාරූප ඇතුළත් කරන්න")}</p>
+            `}
+          </div>
         </div>
       `;
     }
 
-    // 2. ORGANIZATION STRUCTURE & PTI GALLERY
+    // 2. ORGANIZATION STRUCTURE & FULL PTI GALLERY
     function renderOrgStructureView() {
       return `
         <div class="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-5">
@@ -717,10 +797,10 @@
       return `
         <div class="max-w-4xl mx-auto">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-white uppercase mb-1">${t("PTI Photo Gallery", "PTI ඡායාරූප ගැලරිය")}</h2>
-          <p class="text-xs text-slate-400 mb-5">${t("Training sessions, athletic events & sports highlights", "පුහුණු සැසි සහ ක්‍රීඩා අවස්ථා")}</p>
+          <p class="text-xs text-slate-400 mb-5">${t("Tap any photo to enlarge", "විශාල කර බැලීමට ඡායාරූපය ටච් කරන්න")}</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             ${appData.ptiGallery.length ? appData.ptiGallery.map(item => `
-              <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow">
+              <div onclick="openPhotoViewer('${item.photo}', '${t(item.titleEn, item.titleSi).replace(/'/g, "\\'")}')" class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow cursor-pointer">
                 <img src="${item.photo}" alt="${item.titleEn}" class="w-full h-48 object-cover bg-slate-950" />
                 <div class="p-3">
                   <p class="text-xs font-bold text-white">${t(item.titleEn, item.titleSi)}</p>
@@ -752,7 +832,7 @@
           <div class="flex items-center justify-between mb-4">
             <div>
               <h2 class="font-display text-xl sm:text-2xl font-bold text-white uppercase">${t("Rank-Wise PTI Strength Summary", "නිලයන් අනුව PTI වරුන් සංඛ්‍යාව")}</h2>
-              <p class="text-xs text-slate-400">${t("Live count across all 26 camps", "සියලුම කඳවුරු වල සිටින මුළු PTI වරුන් ගණන")}</p>
+              <p class="text-xs text-slate-400">${t(`Live count across all ${appData.camps.length} camps`, `කඳවුරු ${appData.camps.length} සමස්ත PTI වරුන් ගණන`)}</p>
             </div>
             <div class="bg-sky-500/20 border border-sky-500/40 rounded-xl px-4 py-2 text-center">
               <span class="block text-[10px] uppercase font-bold text-sky-400">Total PTIs</span>
@@ -1775,7 +1855,7 @@
         return `
           <div class="space-y-4">
             <div class="bg-slate-950 border border-pink-500/40 rounded-xl p-4 space-y-2.5">
-              <h3 class="text-xs font-bold uppercase text-pink-400">+ Upload Photo to PTI Gallery</h3>
+              <h3 class="text-xs font-bold uppercase text-pink-400">+ Upload Photo to PTI Gallery (Displays on Home Screen)</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input id="gal-title-en" type="text" placeholder="Caption (English)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
                 <input id="gal-title-si" type="text" placeholder="විස්තරය (සිංහල)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white" />
